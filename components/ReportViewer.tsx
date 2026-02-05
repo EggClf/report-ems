@@ -15,7 +15,7 @@ export const ReportViewer: React.FC<ReportViewerProps> = ({
 }) => {
   // Transform absolute URLs to relative URLs for images
   const transformedContent = content.replace(
-    /http:\/\/localhost:8001(\/visualizations\/[^\)]+)/g,
+    /http:\/\/172\.16\.28\.63:8000(\/visualizations\/[^\)]+)/g,
     "$1",
   );
 

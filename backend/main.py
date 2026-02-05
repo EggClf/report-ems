@@ -37,7 +37,7 @@ app.mount("/visualizations", StaticFiles(directory="visualizations"), name="visu
 
 # Base URL for accessing the API from external services
 # Change this to your actual host when deploying
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8001")
+BASE_URL = os.getenv("BASE_URL", "http://172.16.28.63:8001")
 
 
 @app.get("/docs", include_in_schema=False)
@@ -133,7 +133,7 @@ async def get_dataframe_info(file_path: str = Query(..., description="Path to CS
 async def visualize_kpi_data(
     file_path: str = Query(..., description="Path to CSV file with KPI data"),
     kpi_columns: str = Query(None, description="Comma-separated list of KPI columns to visualize. If not provided, all numeric columns will be used"),
-    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://localhost:5252")
+    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://172.16.28.63:8001")
 ):
     """
     Generate visualizations for 5G KPI data and return paths to the generated images.
@@ -282,7 +282,7 @@ async def generate_kpi_report(
     report_title: str = Query("5G KPI Analysis Report", description="Title for the report"),
     report_type: str = Query("mro", description="Type of report: 'mro' or 'es'"),
     kpi_columns: str = Query(None, description="Comma-separated list of KPI columns to analyze"),
-    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://localhost:8001")
+    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://172.16.28.63:8001")
 ):
 
     """
