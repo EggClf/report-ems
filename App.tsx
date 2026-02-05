@@ -1,10 +1,10 @@
 import React from 'react';
-import { Dashboard } from './components/Dashboard';
+import { LoopMonitoringDashboard } from './components/LoopMonitoringDashboard';
 
 const App: React.FC = () => {
   return (
     <div className="antialiased text-slate-900 bg-slate-50">
-      <Dashboard />
+      <LoopMonitoringDashboard />
     </div>
   );
 };
