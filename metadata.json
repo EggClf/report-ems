@@ -1,0 +1,5 @@
+{
+  "name": "Telco AI-EMS Dashboard",
+  "description": "An AI-driven Element Management System dashboard for telecommunications, visualizing MRO and Energy Saving decisions with explainable AI (XAI) metrics.",
+  "requestFramePermissions": []
+}
