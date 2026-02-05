@@ -254,3 +254,228 @@ export const generateMockKpiUpdate = (cellId = 'gNB_1023'): KpiDataPoint => {
 
   return point;
 };
+
+// New Metrics Mock Data
+import { 
+  MetricsSnapshot, 
+  StrategicMetric, 
+  TacticalActionMetric, 
+  TacticalPerformanceMetric, 
+  OperationalMetric 
+} from '../types';
+
+export const generateMockMetrics = (): MetricsSnapshot => {
+  const now = new Date();
+  
+  // Strategic Metrics
+  const strategicMetrics: StrategicMetric[] = [
+    {
+      intent_type: 'ES',
+      target_scope: 'Cluster_Q7_001',
+      decision_path: 'root_node.low_traffic.night_time',
+      model_version: 'v1.2.0',
+      value: 0.94,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString()
+    },
+    {
+      intent_type: 'MRO',
+      target_scope: 'Cell_gNB_1023',
+      decision_path: 'root_node.high_mobility.congestion',
+      model_version: 'v1.2.0',
+      value: 0.87,
+      timestamp: new Date(now.getTime() - 3 * 60000).toISOString()
+    },
+    {
+      intent_type: 'QoS',
+      target_scope: 'Cluster_Q2_East',
+      decision_path: 'root_node.degraded_service.peak_hour',
+      model_version: 'v1.2.1',
+      value: 0.78,
+      timestamp: new Date(now.getTime() - 8 * 60000).toISOString()
+    },
+    {
+      intent_type: 'TS',
+      target_scope: 'Cell_gNB_4055',
+      decision_path: 'root_node.traffic_steering.load_balancing',
+      model_version: 'v1.2.0',
+      value: 1.0,
+      timestamp: new Date(now.getTime() - 2 * 60000).toISOString()
+    }
+  ];
+
+  // Tactical Action Metrics
+  const tacticalActions: TacticalActionMetric[] = [
+    {
+      agent_type: 'ES',
+      action_name: 'cell_sleep',
+      status: 'success',
+      value: 1,
+      timestamp: new Date(now.getTime() - 4 * 60000).toISOString(),
+      target: 'gNB_4055_Carrier2'
+    },
+    {
+      agent_type: 'MRO',
+      action_name: 'handover_threshold',
+      status: 'success',
+      value: 2,
+      timestamp: new Date(now.getTime() - 6 * 60000).toISOString(),
+      target: 'gNB_1023'
+    },
+    {
+      agent_type: 'ES',
+      action_name: 'power_offset',
+      status: 'rejected_by_safety_layer',
+      value: -5,
+      timestamp: new Date(now.getTime() - 10 * 60000).toISOString(),
+      target: 'gNB_2341'
+    },
+    {
+      agent_type: 'MRO',
+      action_name: 'handover_threshold',
+      status: 'success',
+      value: -1,
+      timestamp: new Date(now.getTime() - 1 * 60000).toISOString(),
+      target: 'gNB_5678'
+    },
+    {
+      agent_type: 'QoS',
+      action_name: 'power_offset',
+      status: 'success',
+      value: 3,
+      timestamp: new Date(now.getTime() - 7 * 60000).toISOString(),
+      target: 'gNB_9012'
+    },
+    {
+      agent_type: 'TS',
+      action_name: 'traffic_steering',
+      status: 'failed',
+      value: 0,
+      timestamp: new Date(now.getTime() - 12 * 60000).toISOString(),
+      target: 'Cluster_Q2_East'
+    }
+  ];
+
+  // Tactical Performance Metrics
+  const tacticalPerformance: TacticalPerformanceMetric[] = [
+    {
+      agent_type: 'ES',
+      metric_type: 'reward',
+      value: 0.82,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString()
+    },
+    {
+      agent_type: 'ES',
+      metric_type: 'episode_length',
+      value: 247,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString()
+    },
+    {
+      agent_type: 'ES',
+      metric_type: 'q_value_mean',
+      value: 1.45,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString()
+    },
+    {
+      agent_type: 'MRO',
+      metric_type: 'reward',
+      value: 0.76,
+      timestamp: new Date(now.getTime() - 3 * 60000).toISOString()
+    },
+    {
+      agent_type: 'MRO',
+      metric_type: 'episode_length',
+      value: 312,
+      timestamp: new Date(now.getTime() - 3 * 60000).toISOString()
+    },
+    {
+      agent_type: 'MRO',
+      metric_type: 'q_value_mean',
+      value: 1.28,
+      timestamp: new Date(now.getTime() - 3 * 60000).toISOString()
+    },
+    {
+      agent_type: 'QoS',
+      metric_type: 'reward',
+      value: 0.68,
+      timestamp: new Date(now.getTime() - 8 * 60000).toISOString()
+    },
+    {
+      agent_type: 'TS',
+      metric_type: 'reward',
+      value: 0.91,
+      timestamp: new Date(now.getTime() - 2 * 60000).toISOString()
+    }
+  ];
+
+  // Operational Metrics
+  const operationalMetrics: OperationalMetric[] = [
+    {
+      metric_name: 'loop_latency_seconds',
+      value: 0.342,
+      timestamp: new Date(now.getTime() - 1 * 60000).toISOString(),
+      labels: { agent: 'ES' }
+    },
+    {
+      metric_name: 'loop_latency_seconds',
+      value: 0.287,
+      timestamp: new Date(now.getTime() - 2 * 60000).toISOString(),
+      labels: { agent: 'MRO' }
+    },
+    {
+      metric_name: 'loop_latency_seconds',
+      value: 0.456,
+      timestamp: new Date(now.getTime() - 3 * 60000).toISOString(),
+      labels: { agent: 'QoS' }
+    },
+    {
+      metric_name: 'model_drift_score',
+      value: 0.12,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString(),
+      labels: { agent: 'ES' }
+    },
+    {
+      metric_name: 'model_drift_score',
+      value: 0.08,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString(),
+      labels: { agent: 'MRO' }
+    },
+    {
+      metric_name: 'model_drift_score',
+      value: 0.24,
+      timestamp: new Date(now.getTime() - 5 * 60000).toISOString(),
+      labels: { agent: 'QoS' }
+    },
+    {
+      metric_name: 'resource_usage',
+      value: 67.5,
+      timestamp: now.toISOString(),
+      labels: { agent: 'ES', resource_type: 'GPU' }
+    },
+    {
+      metric_name: 'resource_usage',
+      value: 42.3,
+      timestamp: now.toISOString(),
+      labels: { agent: 'ES', resource_type: 'CPU' }
+    },
+    {
+      metric_name: 'resource_usage',
+      value: 78.2,
+      timestamp: now.toISOString(),
+      labels: { agent: 'MRO', resource_type: 'GPU' }
+    },
+    {
+      metric_name: 'resource_usage',
+      value: 53.7,
+      timestamp: now.toISOString(),
+      labels: { agent: 'MRO', resource_type: 'CPU' }
+    }
+  ];
+
+  return {
+    strategic: strategicMetrics,
+    tactical_actions: tacticalActions,
+    tactical_performance: tacticalPerformance,
+    operational: operationalMetrics,
+    last_updated: now.toISOString()
+  };
+};

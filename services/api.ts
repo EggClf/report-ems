@@ -1,4 +1,5 @@
-import { MOCK_REPORTS, MOCK_REPORT_CONTENT, generateMockKpiHistory, KpiDataPoint } from './mockData';
+import { MOCK_REPORTS, MOCK_REPORT_CONTENT, generateMockKpiHistory, KpiDataPoint, generateMockMetrics } from './mockData';
+import { MetricsSnapshot } from '../types';
 
 export interface Report {
     filename: string;
@@ -63,5 +64,23 @@ export const fetchRealtimeKpi = async (cellId: string, hours: number = 4): Promi
     } catch (error) {
         console.warn('Error fetching realtime KPI:', error);
         return [];
+    }
+};
+
+export const fetchMetricsSnapshot = async (): Promise<MetricsSnapshot> => {
+    try {
+        // In the future this will be:
+        // const response = await fetch('/metrics/snapshot');
+        // return await response.json();
+
+        // Mock Implementation
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(generateMockMetrics());
+            }, 300);
+        });
+    } catch (error) {
+        console.warn('Error fetching metrics snapshot:', error);
+        return generateMockMetrics();
     }
 };

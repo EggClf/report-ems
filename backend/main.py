@@ -16,6 +16,9 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from datetime import datetime
 import base64
+from typing import List, Dict, Any
+from datetime import datetime, timedelta
+import random
 
 app = FastAPI(docs_url=None, redoc_url=None)
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -544,3 +547,224 @@ async def list_visualizations():
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error listing visualizations: {str(e)}")
+
+
+# New Metrics Endpoints for CRL Monitoring
+@app.get("/metrics/snapshot")
+async def get_metrics_snapshot():
+    """
+    Get current snapshot of all CRL metrics (Strategic, Tactical, Operational).
+    """
+    now = datetime.now()
+    
+    # Strategic Metrics (IC Agent)
+    strategic_metrics = [
+        {
+            "intent_type": "ES",
+            "target_scope": "Cluster_Q7_001",
+            "decision_path": "root_node.low_traffic.night_time",
+            "model_version": "v1.2.0",
+            "value": 0.94,
+            "timestamp": (now - timedelta(minutes=5)).isoformat()
+        },
+        {
+            "intent_type": "MRO",
+            "target_scope": "Cell_gNB_1023",
+            "decision_path": "root_node.high_mobility.congestion",
+            "model_version": "v1.2.0",
+            "value": 0.87,
+            "timestamp": (now - timedelta(minutes=3)).isoformat()
+        },
+        {
+            "intent_type": "QoS",
+            "target_scope": "Cluster_Q2_East",
+            "decision_path": "root_node.degraded_service.peak_hour",
+            "model_version": "v1.2.1",
+            "value": 0.78,
+            "timestamp": (now - timedelta(minutes=8)).isoformat()
+        },
+        {
+            "intent_type": "TS",
+            "target_scope": "Cell_gNB_4055",
+            "decision_path": "root_node.traffic_steering.load_balancing",
+            "model_version": "v1.2.0",
+            "value": 1.0,
+            "timestamp": (now - timedelta(minutes=2)).isoformat()
+        }
+    ]
+    
+    # Tactical Action Metrics
+    tactical_actions = [
+        {
+            "agent_type": "ES",
+            "action_name": "cell_sleep",
+            "status": "success",
+            "value": 1,
+            "timestamp": (now - timedelta(minutes=4)).isoformat(),
+            "target": "gNB_4055_Carrier2"
+        },
+        {
+            "agent_type": "MRO",
+            "action_name": "handover_threshold",
+            "status": "success",
+            "value": 2,
+            "timestamp": (now - timedelta(minutes=6)).isoformat(),
+            "target": "gNB_1023"
+        },
+        {
+            "agent_type": "ES",
+            "action_name": "power_offset",
+            "status": "rejected_by_safety_layer",
+            "value": -5,
+            "timestamp": (now - timedelta(minutes=10)).isoformat(),
+            "target": "gNB_2341"
+        },
+        {
+            "agent_type": "MRO",
+            "action_name": "handover_threshold",
+            "status": "success",
+            "value": -1,
+            "timestamp": (now - timedelta(minutes=1)).isoformat(),
+            "target": "gNB_5678"
+        },
+        {
+            "agent_type": "QoS",
+            "action_name": "power_offset",
+            "status": "success",
+            "value": 3,
+            "timestamp": (now - timedelta(minutes=7)).isoformat(),
+            "target": "gNB_9012"
+        },
+        {
+            "agent_type": "TS",
+            "action_name": "traffic_steering",
+            "status": "failed",
+            "value": 0,
+            "timestamp": (now - timedelta(minutes=12)).isoformat(),
+            "target": "Cluster_Q2_East"
+        }
+    ]
+    
+    # Tactical Performance Metrics
+    tactical_performance = [
+        {
+            "agent_type": "ES",
+            "metric_type": "reward",
+            "value": 0.82,
+            "timestamp": (now - timedelta(minutes=5)).isoformat()
+        },
+        {
+            "agent_type": "ES",
+            "metric_type": "episode_length",
+            "value": 247,
+            "timestamp": (now - timedelta(minutes=5)).isoformat()
+        },
+        {
+            "agent_type": "ES",
+            "metric_type": "q_value_mean",
+            "value": 1.45,
+            "timestamp": (now - timedelta(minutes=5)).isoformat()
+        },
+        {
+            "agent_type": "MRO",
+            "metric_type": "reward",
+            "value": 0.76,
+            "timestamp": (now - timedelta(minutes=3)).isoformat()
+        },
+        {
+            "agent_type": "MRO",
+            "metric_type": "episode_length",
+            "value": 312,
+            "timestamp": (now - timedelta(minutes=3)).isoformat()
+        },
+        {
+            "agent_type": "MRO",
+            "metric_type": "q_value_mean",
+            "value": 1.28,
+            "timestamp": (now - timedelta(minutes=3)).isoformat()
+        },
+        {
+            "agent_type": "QoS",
+            "metric_type": "reward",
+            "value": 0.68,
+            "timestamp": (now - timedelta(minutes=8)).isoformat()
+        },
+        {
+            "agent_type": "TS",
+            "metric_type": "reward",
+            "value": 0.91,
+            "timestamp": (now - timedelta(minutes=2)).isoformat()
+        }
+    ]
+    
+    # Operational Metrics
+    operational_metrics = [
+        {
+            "metric_name": "loop_latency_seconds",
+            "value": 0.342,
+            "timestamp": (now - timedelta(minutes=1)).isoformat(),
+            "labels": {"agent": "ES"}
+        },
+        {
+            "metric_name": "loop_latency_seconds",
+            "value": 0.287,
+            "timestamp": (now - timedelta(minutes=2)).isoformat(),
+            "labels": {"agent": "MRO"}
+        },
+        {
+            "metric_name": "loop_latency_seconds",
+            "value": 0.456,
+            "timestamp": (now - timedelta(minutes=3)).isoformat(),
+            "labels": {"agent": "QoS"}
+        },
+        {
+            "metric_name": "model_drift_score",
+            "value": 0.12,
+            "timestamp": (now - timedelta(minutes=5)).isoformat(),
+            "labels": {"agent": "ES"}
+        },
+        {
+            "metric_name": "model_drift_score",
+            "value": 0.08,
+            "timestamp": (now - timedelta(minutes=5)).isoformat(),
+            "labels": {"agent": "MRO"}
+        },
+        {
+            "metric_name": "model_drift_score",
+            "value": 0.24,
+            "timestamp": (now - timedelta(minutes=5)).isoformat(),
+            "labels": {"agent": "QoS"}
+        },
+        {
+            "metric_name": "resource_usage",
+            "value": 67.5,
+            "timestamp": now.isoformat(),
+            "labels": {"agent": "ES", "resource_type": "GPU"}
+        },
+        {
+            "metric_name": "resource_usage",
+            "value": 42.3,
+            "timestamp": now.isoformat(),
+            "labels": {"agent": "ES", "resource_type": "CPU"}
+        },
+        {
+            "metric_name": "resource_usage",
+            "value": 78.2,
+            "timestamp": now.isoformat(),
+            "labels": {"agent": "MRO", "resource_type": "GPU"}
+        },
+        {
+            "metric_name": "resource_usage",
+            "value": 53.7,
+            "timestamp": now.isoformat(),
+            "labels": {"agent": "MRO", "resource_type": "CPU"}
+        }
+    ]
+    
+    return {
+        "strategic": strategic_metrics,
+        "tactical_actions": tactical_actions,
+        "tactical_performance": tactical_performance,
+        "operational": operational_metrics,
+        "last_updated": now.isoformat()
+    }

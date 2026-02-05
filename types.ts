@@ -55,3 +55,47 @@ export interface DecisionResponse {
   expected_impact: ExpectedImpact;
   operator_options: OperatorOptions;
 }
+
+// New Metrics Types
+export interface StrategicMetric {
+  intent_type: 'ES' | 'MRO' | 'TS' | 'QoS';
+  target_scope: string; // Cluster_ID or Cell_ID
+  decision_path: string;
+  model_version: string;
+  value: number; // 1 for active or confidence score
+  timestamp: string;
+}
+
+export interface TacticalActionMetric {
+  agent_type: string; // ES, MRO, etc.
+  action_name: string; // cell_sleep, power_offset, handover_threshold
+  status: 'success' | 'failed' | 'rejected_by_safety_layer';
+  value: number; // Value change (e.g., power reduction in dB)
+  timestamp: string;
+  target: string;
+}
+
+export interface TacticalPerformanceMetric {
+  agent_type: string;
+  metric_type: 'reward' | 'episode_length' | 'q_value_mean';
+  value: number;
+  timestamp: string;
+}
+
+export interface OperationalMetric {
+  metric_name: 'loop_latency_seconds' | 'model_drift_score' | 'resource_usage';
+  value: number;
+  timestamp: string;
+  labels?: {
+    agent?: string;
+    resource_type?: 'GPU' | 'CPU';
+  };
+}
+
+export interface MetricsSnapshot {
+  strategic: StrategicMetric[];
+  tactical_actions: TacticalActionMetric[];
+  tactical_performance: TacticalPerformanceMetric[];
+  operational: OperationalMetric[];
+  last_updated: string;
+}
