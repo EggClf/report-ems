@@ -1,7 +1,7 @@
 /**
  * Network Scan API Service
  * Fetches cell data from the network scan endpoint
- * 
+ *
  * TEMPORARY WORKAROUND:
  * - The network scan API doesn't provide 'confidence' field
  * - We calculate it based on data completeness (see calculateConfidence method)
@@ -54,7 +54,7 @@ class NetworkScanAPI {
   async fetchNetworkScan(date?: Date): Promise<NetworkScanData> {
     const targetDate = date || new Date();
     const dateStr = targetDate.toISOString().split('T')[0];
-    
+
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
@@ -87,7 +87,7 @@ class NetworkScanAPI {
     // Count how many features have valid values
     let validFeatures = 0;
     let totalFeatures = 0;
-    
+
     featureNames.forEach(name => {
       if (name === 'confidence' || name === 'n_alarm') return; // Skip these
       totalFeatures++;
@@ -96,12 +96,12 @@ class NetworkScanAPI {
         validFeatures++;
       }
     });
-    
+
     // Calculate confidence as percentage of valid features
     // Range: 0.7 to 0.95 based on completeness
     const completeness = totalFeatures > 0 ? validFeatures / totalFeatures : 0.5;
     const confidence = 0.7 + (completeness * 0.25);
-    
+
     return Math.min(0.95, Math.max(0.7, confidence));
   }
 
@@ -110,7 +110,7 @@ class NetworkScanAPI {
    */
   extractMLFeatures(cell: CellFeatures, modelType: 'ES' | 'MRO'): Record<string, number> {
     const features: Record<string, number> = {};
-    
+
     if (modelType === 'ES') {
       // ES model features
       const esFeatureNames = [
@@ -124,10 +124,10 @@ class NetworkScanAPI {
         'Weather Sensitivity Score',
         'n_alarm',
       ];
-      
+
       // Calculate confidence based on data completeness
       const confidence = this.calculateConfidence(cell, esFeatureNames);
-      
+
       esFeatureNames.forEach(name => {
         if (name === 'confidence') {
           features[name] = confidence;
@@ -139,9 +139,9 @@ class NetworkScanAPI {
           features[name] = value !== null && value !== undefined ? value : 0;
         }
       });
-      
+
       console.log(`ES features for ${cell.cellname}: confidence=${confidence.toFixed(3)}, valid_features=${Object.values(features).filter(v => v !== 0).length}/${esFeatureNames.length}`);
-      
+
     } else {
       // MRO model features
       const mroFeatureNames = [
@@ -154,10 +154,10 @@ class NetworkScanAPI {
         'n_alarm',
         'Social Event Score',
       ];
-      
+
       // Calculate confidence based on data completeness
       const confidence = this.calculateConfidence(cell, mroFeatureNames);
-      
+
       mroFeatureNames.forEach(name => {
         if (name === 'confidence') {
           features[name] = confidence;
@@ -169,10 +169,10 @@ class NetworkScanAPI {
           features[name] = value !== null && value !== undefined ? value : 0;
         }
       });
-      
+
       console.log(`MRO features for ${cell.cellname}: confidence=${confidence.toFixed(3)}, valid_features=${Object.values(features).filter(v => v !== 0).length}/${mroFeatureNames.length}`);
     }
-    
+
     return features;
   }
 
@@ -181,10 +181,10 @@ class NetworkScanAPI {
    */
   mergeCellFeatures(mroFeatures: CellFeatures[], esFeatures: CellFeatures[]): CellFeatures[] {
     const merged: CellFeatures[] = [];
-    
+
     // Use cell name as key to merge
     const esFeaturesMap = new Map(esFeatures.map(cell => [cell.cellname, cell]));
-    
+
     mroFeatures.forEach(mroCell => {
       const esCell = esFeaturesMap.get(mroCell.cellname);
       if (esCell) {
@@ -201,7 +201,7 @@ class NetworkScanAPI {
         merged.push(mroCell);
       }
     });
-    
+
     return merged;
   }
 }

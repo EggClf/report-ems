@@ -72,7 +72,7 @@ When the network scan API is updated to include confidence:
 
 **Workaround:** Default to 0 instead of 0.5 for missing features to avoid bias.
 
-**Rationale:** 
+**Rationale:**
 - 0 = "no signal" or "not applicable" - neutral
 - 0.5 = "medium value" - could bias predictions
 

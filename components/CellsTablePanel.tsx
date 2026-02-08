@@ -13,19 +13,29 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter cells based on search
-  const filteredCells = cells.filter(cell => 
+  const filteredCells = cells.filter(cell =>
     cell.cellname.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cell.ne_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Check if cell has null/missing features
+// Check if cell has null/missing features  
   const hasValidFeatures = (cell: CellFeatures, modelType: 'ES' | 'MRO'): boolean => {
     if (modelType === 'ES') {
-      return cell['Energy Inefficiency Score'] !== null && 
-             cell['Persistent Low Load Score'] !== null;
+      const hasES = (cell['Energy Inefficiency Score'] !== null && cell['Energy Inefficiency Score'] !== undefined) &&
+                    (cell['Persistent Low Load Score'] !== null && cell['Persistent Low Load Score'] !== undefined);
+      return hasES;
     } else {
-      return cell['Handover Failure Pressure'] !== null && 
-             cell['Handover Success Stability'] !== null;
+      const hasMRO = (cell['Handover Failure Pressure'] !== null && cell['Handover Failure Pressure'] !== undefined) &&
+                     (cell['Handover Success Stability'] !== null && cell['Handover Success Stability'] !== undefined);
+      if (!hasMRO) {
+        console.log(`Cell ${cell.cellname} MRO feature check:`, {
+          'HO Failure': cell['Handover Failure Pressure'],
+          'HO Stability': cell['Handover Success Stability'],
+          'typeof HO Failure': typeof cell['Handover Failure Pressure'],
+          'typeof HO Stability': typeof typeof cell['Handover Success Stability']
+        });
+      }
+      return hasMRO;
     }
   };
 
@@ -57,7 +67,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
           <Server className="w-6 h-6 text-indigo-600" />
           Network Cells ({cells.length})
         </h2>
-        
+
         {/* Model Type Selector */}
         <div className="flex gap-2">
           <button
@@ -97,7 +107,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
       {/* Info Banner */}
       <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
         <div className="text-sm text-indigo-800">
-          <strong>Instructions:</strong> Click on any cell to run {selectedModelType} model prediction 
+          <strong>Instructions:</strong> Click on any cell to run {selectedModelType} model prediction
           and view the decision tree trace with feature importance analysis.
         </div>
       </div>
@@ -124,7 +134,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
             filteredCells.map((cell, index) => {
               const hasFeatures = hasValidFeatures(cell, selectedModelType);
               const alarmCount = cell.n_alarm ?? 0;
-              
+
               return (
                 <div
                   key={`${cell.cellname}-${index}`}
@@ -178,7 +188,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                         <div className="flex gap-2">
                           <span className="text-gray-500">Load:</span>
                           <span className="font-medium">
-                            {cell['Persistent Low Load Score'] !== null 
+                            {(cell['Persistent Low Load Score'] !== null && cell['Persistent Low Load Score'] !== undefined)
                               ? (cell['Persistent Low Load Score']! * 100).toFixed(0) + '%'
                               : 'N/A'}
                           </span>
@@ -186,7 +196,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                         <div className="flex gap-2">
                           <span className="text-gray-500">Inefficiency:</span>
                           <span className="font-medium">
-                            {cell['Energy Inefficiency Score'] !== null 
+                            {(cell['Energy Inefficiency Score'] !== null && cell['Energy Inefficiency Score'] !== undefined)
                               ? (cell['Energy Inefficiency Score']! * 100).toFixed(0) + '%'
                               : 'N/A'}
                           </span>
@@ -197,7 +207,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                         <div className="flex gap-2">
                           <span className="text-gray-500">HO Fail:</span>
                           <span className="font-medium">
-                            {cell['Handover Failure Pressure'] !== null 
+                            {(cell['Handover Failure Pressure'] !== null && cell['Handover Failure Pressure'] !== undefined)
                               ? (cell['Handover Failure Pressure']! * 100).toFixed(0) + '%'
                               : 'N/A'}
                           </span>
@@ -205,7 +215,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                         <div className="flex gap-2">
                           <span className="text-gray-500">HO Stability:</span>
                           <span className="font-medium">
-                            {cell['Handover Success Stability'] !== null 
+                            {(cell['Handover Success Stability'] !== null && cell['Handover Success Stability'] !== undefined)
                               ? (cell['Handover Success Stability']! * 100).toFixed(0) + '%'
                               : 'N/A'}
                           </span>
