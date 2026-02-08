@@ -7,10 +7,19 @@ interface DecisionTreeTracePanelProps {
 }
 
 export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
+  const leafNode = trace.path.find((node) => node.featureName === 'LEAF');
+  const leafDecision = leafNode
+    ? /=(\s*)true/i.test(leafNode.condition)
+      ? true
+      : /=(\s*)false/i.test(leafNode.condition)
+        ? false
+        : undefined
+    : undefined;
+  const finalDecision = trace.decision !== undefined ? trace.decision : leafDecision;
   const finalActionLabel = (trace.intentLabel === 'MRO' || trace.intentLabel === 'ES')
-    ? (trace.decision === false
-        ? `Do not apply ${trace.intentLabel}`
-        : `Apply ${trace.intentLabel}`)
+    ? (finalDecision === true
+        ? `Apply ${trace.intentLabel}`
+        : `Do not apply ${trace.intentLabel}`)
     : trace.intentLabel;
 
   return (
