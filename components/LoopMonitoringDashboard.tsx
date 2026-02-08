@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Network, RefreshCw, Activity, Menu } from 'lucide-react';
 import { OverviewPanel } from './OverviewPanel';
 import { HotspotsMapPanel } from './HotspotsMapPanel';
-import { IntentClassifierPanel } from './IntentClassifierPanel';
+import { CellsTablePanel } from './CellsTablePanel';
 import { DecisionTreeTracePanel } from './DecisionTreeTracePanel';
 import { PlannerOutputPanel } from './PlannerOutputPanel';
 import { ExecutionOutcomePanel } from './ExecutionOutcomePanel';
@@ -12,54 +12,71 @@ import { QuickStatsBar } from './QuickStatsBar';
 import { 
   getMockOverviewData, 
   getMockHotspots, 
-  getMockIntents, 
-  getMockIntentDistribution,
-  getMockDecisionTreeTrace,
   getMockPlannerOutput,
   getMockExecutionOutcome
 } from '../services/mockDataV2';
-import { Hotspot, Intent } from '../types-v2';
+import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
+import { mlModelAPI } from '../services/mlModelAPI';
+import { Hotspot } from '../types-v2';
+import { DecisionTreeTrace } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(new Date());
-  const [selectedIntent, setSelectedIntent] = useState<Intent | null>(null);
+  const [selectedCell, setSelectedCell] = useState<CellFeatures | null>(null);
+  const [selectedModelType, setSelectedModelType] = useState<'ES' | 'MRO'>('ES');
   const [activeSection, setActiveSection] = useState('overview');
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
+  const [cellsLoading, setCellsLoading] = useState(true);
+  const [decisionTraceLoading, setDecisionTraceLoading] = useState(false);
   
   // Refs for scroll tracking
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
   
-  // Load mock data
+  // Load mock data for overview/hotspots
   const [overviewData, setOverviewData] = useState(() => getMockOverviewData());
   const [hotspots, setHotspots] = useState(() => getMockHotspots());
-  const [intents, setIntents] = useState(() => getMockIntents());
-  const [intentDistribution, setIntentDistribution] = useState(() => getMockIntentDistribution());
   
-  // Use first intent for detailed views
-  const firstIntent = intents[0];
-  const [decisionTrace, setDecisionTrace] = useState(() => getMockDecisionTreeTrace(firstIntent.id));
-  const [plannerOutput, setPlannerOutput] = useState(() => getMockPlannerOutput(firstIntent.id));
-  const [executionOutcome, setExecutionOutcome] = useState(() => 
-    getMockExecutionOutcome(plannerOutput.planId, firstIntent.id)
-  );
+  // Real cell data from network scan
+  const [cells, setCells] = useState<CellFeatures[]>([]);
+  const [networkScanData, setNetworkScanData] = useState<any>(null);
+  
+  // Decision trace and planner data
+  const [decisionTrace, setDecisionTrace] = useState<DecisionTreeTrace | null>(null);
+  const [plannerOutput, setPlannerOutput] = useState<any>(null);
+  const [executionOutcome, setExecutionOutcome] = useState<any>(null);
 
-  // Auto-refresh every 30 seconds
+  // Load cell data on mount
   useEffect(() => {
-    const interval = setInterval(() => {
-      handleRefresh();
-    }, 30000);
-    
-    return () => clearInterval(interval);
+    loadCellData();
   }, []);
+
+  // Load cell data from network scan API
+  const loadCellData = async () => {
+    setCellsLoading(true);
+    try {
+      const data = await networkScanAPI.fetchNetworkScan();
+      setNetworkScanData(data);
+      
+      // Merge MRO and ES features
+      const mergedCells = networkScanAPI.mergeCellFeatures(data.mro_features, data.es_features);
+      setCells(mergedCells);
+      
+      console.log(`✓ Loaded ${mergedCells.length} cells from network scan`);
+    } catch (error) {
+      console.error('Failed to load cell data:', error);
+    } finally {
+      setCellsLoading(false);
+    }
+  };
 
   // Scroll tracking for active section
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200; // Offset for header
-      
-      const sectionIds = ['overview', 'legend', 'hotspots', 'intents', 'decision-trace', 'planner', 'execution'];
-      
+
+      const sectionIds = ['overview', 'legend', 'hotspots', 'cells', 'decision-trace', 'planner', 'execution'];
+
       for (const id of sectionIds) {
         const element = sectionRefs.current[id];
         if (element) {
@@ -74,7 +91,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
 
     window.addEventListener('scroll', handleScroll);
     handleScroll(); // Initial check
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -87,45 +104,63 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-    
-    // Simulate data refresh
-    setTimeout(() => {
+
+    try {
+      // Refresh overview and hotspot data
       setOverviewData(getMockOverviewData());
       setHotspots(getMockHotspots());
-      setIntents(getMockIntents());
-      setIntentDistribution(getMockIntentDistribution());
       
-      const newFirstIntent = getMockIntents()[0];
-      setDecisionTrace(getMockDecisionTreeTrace(newFirstIntent.id));
-      const newPlannerOutput = getMockPlannerOutput(newFirstIntent.id);
-      setPlannerOutput(newPlannerOutput);
-      setExecutionOutcome(getMockExecutionOutcome(newPlannerOutput.planId, newFirstIntent.id));
+      // Reload cell data from network scan
+      await loadCellData();
       
       setLastUpdate(new Date());
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
       setRefreshing(false);
-    }, 1000);
-  };
-
-  const handleHotspotClick = (hotspot: Hotspot) => {
-    // Find or create intent for this hotspot
-    const relatedIntent = intents.find(i => i.intentLabel === hotspot.intentLabel);
-    if (relatedIntent) {
-      setSelectedIntent(relatedIntent);
-      // Navigate to decision trace section
-      handleNavigate('decision-trace');
     }
   };
 
-  const handleIntentClick = (intent: Intent) => {
-    setSelectedIntent(intent);
-    // Update detail panels with this intent's data
-    setDecisionTrace(getMockDecisionTreeTrace(intent.id));
-    const newPlannerOutput = getMockPlannerOutput(intent.id);
-    setPlannerOutput(newPlannerOutput);
-    setExecutionOutcome(getMockExecutionOutcome(newPlannerOutput.planId, intent.id));
+  const handleHotspotClick = (hotspot: Hotspot) => {
+    // Navigate to cells section when hotspot clicked
+    handleNavigate('cells');
+  };
+
+const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
+    setSelectedCell(cell);
+    setSelectedModelType(modelType);
+    setDecisionTraceLoading(true);
     
+    try {
+      // Extract features for the selected model
+      const features = networkScanAPI.extractMLFeatures(cell, modelType);
+      
+      console.log(`Running ${modelType} prediction for cell ${cell.cellname}...`);
+      
+      // Get decision trace from ML API
+      const trace = await mlModelAPI.getDecisionTreeTrace(
+        cell.intent_id || `cell_${cell.cellname}`,
+        modelType,
+        features
+      );
+      
+      setDecisionTrace(trace);
+      
+      // Generate planner output and execution outcome (mock for now)
+      const newPlannerOutput = getMockPlannerOutput(trace.intentId);
+      setPlannerOutput(newPlannerOutput);
+      setExecutionOutcome(getMockExecutionOutcome(newPlannerOutput.planId, trace.intentId));
+      
+      console.log(`✓ ${modelType} prediction complete:`, trace.decision);
+    } catch (error) {
+      console.error('Failed to get ML prediction:', error);
+      // Could show error toast here
+    } finally {
+      setDecisionTraceLoading(false);
+    }
+
     // Navigate to decision trace section
     handleNavigate('decision-trace');
   };
@@ -138,7 +173,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
         onNavigate={handleNavigate}
         loopStatus={overviewData.loopStatus}
         alertCount={overviewData.alerts.length}
-        intentCount={intents.length}
+        intentCount={cells.length}
         hotspotCount={hotspots.length}
         isExpanded={sidebarExpanded}
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
@@ -196,7 +231,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
         <QuickStatsBar
           loopStatus={overviewData.loopStatus}
           alertCount={overviewData.alerts.length}
-          intentCount={intents.length}
+          intentCount={cells.length}
           hotspotCount={hotspots.length}
           onNavigate={handleNavigate}
         />
@@ -223,28 +258,37 @@ export const LoopMonitoringDashboard: React.FC = () => {
               <HotspotsMapPanel hotspots={hotspots} onHotspotClick={handleHotspotClick} />
             </div>
 
-            {/* Panel 3: Intent Classifier */}
-            <div ref={(el) => { sectionRefs.current['intents'] = el; }} id="intents">
-              <IntentClassifierPanel 
-              intents={intents} 
-              distribution={intentDistribution}
-              onIntentClick={handleIntentClick}
-            />
+            {/* Panel 3: Network Cells Table */}
+            <div ref={(el) => { sectionRefs.current['cells'] = el; }} id="cells">
+              <CellsTablePanel
+                cells={cells}
+                onCellClick={handleCellClick}
+                loading={cellsLoading}
+              />
             </div>
 
             {/* Detailed Analysis Section */}
-            {selectedIntent && (
+            {selectedCell && (
             <div className="p-4 bg-indigo-50 border-2 border-indigo-300 rounded-lg">
               <div className="text-sm font-semibold text-indigo-800">
-                📍 Viewing details for Intent: <span className="font-mono">{selectedIntent.id}</span> 
-                {' '}({selectedIntent.intentLabel})
+                📍 Viewing {selectedModelType} analysis for Cell: <span className="font-mono">{selectedCell.cellname}</span>
+                {' '}(NE: {selectedCell.ne_name})
               </div>
             </div>
           )}
 
             {/* Panel 4: Decision Tree Trace */}
             <div ref={(el) => { sectionRefs.current['decision-trace'] = el; }} id="decision-trace">
-              <DecisionTreeTracePanel trace={decisionTrace} />
+              {decisionTraceLoading || !decisionTrace ? (
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                  <div className="flex items-center justify-center space-x-3">
+                    <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
+                    <span className="text-gray-600">Loading decision trace from ML model...</span>
+                  </div>
+                </div>
+              ) : (
+                <DecisionTreeTracePanel trace={decisionTrace} />
+              )}
             </div>
 
             {/* Panel 5: Planner Output */}
@@ -265,8 +309,8 @@ export const LoopMonitoringDashboard: React.FC = () => {
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`}>
         <p className="text-xs">
-          TaoQuan AI Loop Monitoring System • Version 2.0 • 
-          {' '}{intents.length} Active Intents • {hotspots.length} Hotspots Detected
+          TaoQuan AI Loop Monitoring System • Version 2.0 •
+          {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
       </footer>
     </div>

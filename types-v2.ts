@@ -68,6 +68,8 @@ export interface DecisionTreeNode {
 export interface DecisionTreeTrace {
   intentId: string;
   intentLabel: IntentLabel;
+  decision?: boolean; // ML model prediction result
+  confidence?: number; // Prediction confidence
   path: DecisionTreeNode[];
   topFeatures: {
     name: string;

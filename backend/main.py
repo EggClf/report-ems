@@ -1,546 +1,330 @@
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.openapi.docs import (
-    get_redoc_html,
-    get_swagger_ui_html,
-    get_swagger_ui_oauth2_redirect_html,
-)
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response
-import pandas as pd
-from io import StringIO, BytesIO
-from pathlib import Path
-import os
-import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend
-import matplotlib.pyplot as plt
-import seaborn as sns
+"""
+FastAPI Backend for EMS Report System
+Provides ML model prediction endpoints for ES and MRO intent classification
+"""
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
+from typing import Dict, List, Optional, Any
 from datetime import datetime
-import base64
+from contextlib import asynccontextmanager
+import logging
 
-app = FastAPI(docs_url=None, redoc_url=None)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from model_service import get_model_service, PredictionResult
 
-# Create directories for reports and visualizations if they don't exist
-# Create directories for reports and visualizations if they don't exist
-REPORTS_DIR = Path("reports")
-MRO_DIR = REPORTS_DIR / "mro"
-ES_DIR = REPORTS_DIR / "es"
-VISUALIZATIONS_DIR = Path("visualizations")
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-REPORTS_DIR.mkdir(exist_ok=True)
-MRO_DIR.mkdir(exist_ok=True)
-ES_DIR.mkdir(exist_ok=True)
-VISUALIZATIONS_DIR.mkdir(exist_ok=True)
-
-# Mount visualizations directory to serve images
-app.mount("/visualizations", StaticFiles(directory="visualizations"), name="visualizations")
-
-# Base URL for accessing the API from external services
-# Change this to your actual host when deploying
-BASE_URL = os.getenv("BASE_URL", "http://172.16.28.63:8001")
-
-
-@app.get("/docs", include_in_schema=False)
-async def custom_swagger_ui_html():
-    return get_swagger_ui_html(
-        openapi_url=app.openapi_url,
-        title=app.title + " - Swagger UI",
-        oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-        swagger_js_url="/static/swagger-ui-bundle.js",
-        swagger_css_url="/static/swagger-ui.css",
-    )
-
-
-@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
-async def swagger_ui_redirect():
-    return get_swagger_ui_oauth2_redirect_html()
-
-
-@app.get("/redoc", include_in_schema=False)
-async def redoc_html():
-    return get_redoc_html(
-        openapi_url=app.openapi_url,
-        title=app.title + " - ReDoc",
-        redoc_js_url="/static/redoc.standalone.js",
-    )
-
-
-@app.get("/files/list")
-async def list_files(directory: str = Query(None, description="Optional directory path. If not provided, lists files in current directory")):
+# Lifespan event handler
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Load models on startup and cleanup on shutdown"""
     try:
-        target_dir = Path(directory) if directory else Path.cwd()
-        
-        if not target_dir.exists():
-            raise HTTPException(status_code=404, detail=f"Directory not found: {target_dir}")
-        
-        if not target_dir.is_dir():
-            raise HTTPException(status_code=400, detail=f"Path is not a directory: {target_dir}")
-        
-        items = []
-        for item in target_dir.iterdir():
-            items.append({
-                "name": item.name,
-                "path": str(item),
-                "is_file": item.is_file(),
-                "is_dir": item.is_dir(),
-                "size": item.stat().st_size if item.is_file() else None,
-                "extension": item.suffix if item.is_file() else None
-            })
-        
-        items.sort(key=lambda x: (not x["is_dir"], x["name"].lower()))
-        
-        return {
-            "current_directory": str(target_dir),
-            "total_items": len(items),
-            "files": [item for item in items if item["is_file"]],
-            "directories": [item for item in items if item["is_dir"]],
-            "all_items": items
-        }
-    
-    except PermissionError:
-        raise HTTPException(status_code=403, detail="Permission denied to access directory")
+        model_service = get_model_service()
+        logger.info("✓ Models loaded successfully")
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing files: {str(e)}")
+        logger.error(f"Failed to load models: {e}")
+        raise
+    yield
+    # Cleanup code here if needed
+    logger.info("Shutting down...")
 
+# Initialize FastAPI app
+app = FastAPI(
+    title="EMS ML Prediction API",
+    description="Machine Learning prediction service for Energy Saving and MRO intent classification",
+    version="2.0.0",
+    lifespan=lifespan
+)
 
-@app.get("/dataframe/info")
-async def get_dataframe_info(file_path: str = Query(..., description="Path to CSV file")):
-    try:
-        file_path_obj = Path(file_path)
-        if not file_path_obj.exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
-        
-        df = pd.read_csv(file_path)
-        
-        buffer = StringIO()
-        df.info(buf=buffer)
-        info_str = buffer.getvalue()
-        
-        return {
-            "file_path": file_path,
-            "info": info_str,
-            "shape": list(df.shape),
-            "columns": list(df.columns),
-            "dtypes": {str(k): str(v) for k, v in df.dtypes.items()}
-        }
-    except FileNotFoundError:
-        raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, specify exact origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
+# Pydantic models for request/response
+class PredictionRequest(BaseModel):
+    """Request model for predictions"""
+    model_type: str = Field(..., description="Model type: 'ES' or 'MRO'")
+    features: Dict[str, float] = Field(..., description="Feature values for prediction")
+    intent_id: Optional[str] = Field(None, description="Optional intent ID for tracking")
 
-@app.post("/kpi/visualize")
-async def visualize_kpi_data(
-    file_path: str = Query(..., description="Path to CSV file with KPI data"),
-    kpi_columns: str = Query(None, description="Comma-separated list of KPI columns to visualize. If not provided, all numeric columns will be used"),
-    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://172.16.28.63:8001")
-):
+class FeatureImportance(BaseModel):
+    """Feature importance information"""
+    name: str
+    value: float
+    importance: float
+
+class DecisionNode(BaseModel):
+    """Decision tree node information"""
+    nodeId: int
+    condition: str
+    threshold: float
+    featureValue: float
+    featureName: str
+    passed: bool
+
+class Counterfactual(BaseModel):
+    """Counterfactual explanation"""
+    feature: str
+    currentValue: float
+    thresholdValue: float
+    alternativeIntent: str
+
+class DecisionTraceResponse(BaseModel):
+    """Complete decision tree trace response"""
+    intentId: str
+    intentLabel: str
+    decision: bool
+    confidence: float
+    path: List[DecisionNode]
+    topFeatures: List[FeatureImportance]
+    counterfactual: List[Counterfactual]
+    featureSnapshot: Dict[str, float]
+    timestamp: str
+
+class SimplePredictionResponse(BaseModel):
+    """Simple prediction response"""
+    model_type: str
+    decision: bool
+    confidence: float
+    probabilities: List[float]
+    timestamp: str
+
+class ModelInfoResponse(BaseModel):
+    """Model information response"""
+    model_type: str
+    features: List[str]
+    n_features: int
+    model_class: str
+
+# Health check endpoint
+@app.get("/", tags=["Health"])
+@app.get("/health", tags=["Health"])
+async def health_check():
+    """Health check endpoint"""
+    return JSONResponse({
+        "status": "ok",
+        "service": "EMS ML Prediction API",
+        "version": "2.0.0",
+        "timestamp": datetime.now().isoformat()
+    })
+
+# Simple prediction endpoint
+@app.post("/predict", response_model=SimplePredictionResponse, tags=["Prediction"])
+async def predict(request: PredictionRequest):
     """
-    Generate visualizations for 5G KPI data and return paths to the generated images.
+    Make a simple prediction using ES or MRO model
+
+    **Parameters:**
+    - **model_type**: Either 'ES' or 'MRO'
+    - **features**: Dictionary of feature names and values
+    - **intent_id**: Optional tracking ID
+
+    **Returns:** Prediction result with confidence scores
     """
     try:
-        # Use provided base_url or fall back to global BASE_URL
-        url_base = base_url if base_url else BASE_URL
-        
-        file_path_obj = Path(file_path)
-        if not file_path_obj.exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
-        
-        df = pd.read_csv(file_path)
-        
-        # Identify numeric columns (KPIs)
-        if kpi_columns:
-            selected_columns = [col.strip() for col in kpi_columns.split(',')]
-            numeric_cols = [col for col in selected_columns if col in df.columns and pd.api.types.is_numeric_dtype(df[col])]
+        model_service = get_model_service()
+        model_type = request.model_type.upper()
+
+        # Make prediction
+        if model_type == 'ES':
+            result = model_service.predict_es(request.features)
+        elif model_type == 'MRO':
+            result = model_service.predict_mro(request.features)
         else:
-            numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-        
-        if not numeric_cols:
-            raise HTTPException(status_code=400, detail="No numeric KPI columns found in the data")
-        
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        image_paths = []
-        
-        # 1. Time series plot for all KPIs
-        plt.figure(figsize=(14, 8))
-        for col in numeric_cols:
-            plt.plot(df.index, df[col], marker='o', label=col, linewidth=2)
-        plt.xlabel('Index', fontsize=12)
-        plt.ylabel('KPI Values', fontsize=12)
-        plt.title('5G KPI Time Series', fontsize=14, fontweight='bold')
-        plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', fontsize=10)
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        
-        timeseries_path = VISUALIZATIONS_DIR / f"kpi_timeseries_{timestamp}.png"
-        plt.savefig(timeseries_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        image_paths.append(str(timeseries_path))
-        
-        # 2. Box plots for KPI distribution
-        plt.figure(figsize=(14, 8))
-        df[numeric_cols].boxplot(rot=45, fontsize=10)
-        plt.title('5G KPI Distribution', fontsize=14, fontweight='bold')
-        plt.ylabel('Values', fontsize=12)
-        plt.grid(True, alpha=0.3)
-        plt.tight_layout()
-        
-        boxplot_path = VISUALIZATIONS_DIR / f"kpi_boxplot_{timestamp}.png"
-        plt.savefig(boxplot_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        image_paths.append(str(boxplot_path))
-        
-        # 3. Correlation heatmap
-        heatmap_path = None
-        if len(numeric_cols) > 1:
-            plt.figure(figsize=(12, 10))
-            correlation_matrix = df[numeric_cols].corr()
-            sns.heatmap(correlation_matrix, annot=True, fmt='.2f', cmap='coolwarm', 
-                       center=0, square=True, linewidths=1, cbar_kws={"shrink": 0.8})
-            plt.title('KPI Correlation Heatmap', fontsize=14, fontweight='bold')
-            plt.tight_layout()
-            
-            heatmap_path = VISUALIZATIONS_DIR / f"kpi_heatmap_{timestamp}.png"
-            plt.savefig(heatmap_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            image_paths.append(str(heatmap_path))
-        
-        # 4. Individual KPI histograms
-        n_cols = min(3, len(numeric_cols))
-        n_rows = (len(numeric_cols) + n_cols - 1) // n_cols
-        
-        fig, axes = plt.subplots(n_rows, n_cols, figsize=(15, 5 * n_rows))
-        if n_rows == 1 and n_cols == 1:
-            axes = [[axes]]
-        elif n_rows == 1 or n_cols == 1:
-            axes = axes.reshape(n_rows, n_cols)
-        
-        for idx, col in enumerate(numeric_cols):
-            row = idx // n_cols
-            col_idx = idx % n_cols
-            ax = axes[row][col_idx]
-            
-            ax.hist(df[col].dropna(), bins=30, edgecolor='black', alpha=0.7)
-            ax.set_title(f'{col} Distribution', fontsize=11, fontweight='bold')
-            ax.set_xlabel('Value', fontsize=10)
-            ax.set_ylabel('Frequency', fontsize=10)
-            ax.grid(True, alpha=0.3)
-        
-        # Hide empty subplots
-        for idx in range(len(numeric_cols), n_rows * n_cols):
-            row = idx // n_cols
-            col_idx = idx % n_cols
-            fig.delaxes(axes[row][col_idx])
-        
-        plt.tight_layout()
-        histogram_path = VISUALIZATIONS_DIR / f"kpi_histograms_{timestamp}.png"
-        plt.savefig(histogram_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        image_paths.append(str(histogram_path))
-        
-        visualizations = [
-            {
-                "type": "timeseries",
-                "path": str(timeseries_path),
-                "url": f"{url_base}/visualizations/{timeseries_path.name}"
-            },
-            {
-                "type": "boxplot",
-                "path": str(boxplot_path),
-                "url": f"{url_base}/visualizations/{boxplot_path.name}"
-            },
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid model_type: {request.model_type}. Use 'ES' or 'MRO'"
+            )
+
+        return SimplePredictionResponse(
+            model_type=result.model_type,
+            decision=result.decision,
+            confidence=result.confidence,
+            probabilities=result.probabilities,
+            timestamp=datetime.now().isoformat()
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        logger.error(f"Prediction error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
+
+# Decision trace endpoint
+@app.post("/predict/trace", response_model=DecisionTraceResponse, tags=["Prediction"])
+async def predict_with_trace(request: PredictionRequest):
+    """
+    Make prediction with full decision tree trace
+
+    Provides detailed explanation of the prediction including:
+    - Decision path through the tree
+    - Feature importance values
+    - Counterfactual explanations
+    - Complete feature snapshot
+
+    **Parameters:**
+    - **model_type**: Either 'ES' or 'MRO'
+    - **features**: Dictionary of feature names and values
+    - **intent_id**: Optional tracking ID
+
+    **Returns:** Complete decision trace with explanations
+    """
+    try:
+        model_service = get_model_service()
+        model_type = request.model_type.upper()
+        intent_id = request.intent_id or f"intent_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+
+        # Make prediction with trace
+        result, path = model_service.predict_with_trace(model_type, request.features)
+
+        # Get top N features by importance
+        sorted_features = sorted(
+            result.feature_importances.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:5]
+
+        top_features = [
+            FeatureImportance(
+                name=name,
+                value=result.feature_values[name],
+                importance=importance
+            )
+            for name, importance in sorted_features
         ]
-        
-        if heatmap_path:
-            visualizations.append({
-                "type": "heatmap",
-                "path": str(heatmap_path),
-                "url": f"{url_base}/visualizations/{heatmap_path.name}"
+
+        # Generate counterfactual explanations
+        # Find features close to decision boundaries
+        counterfactuals = []
+        for node in path[:3]:  # Use first 3 decision nodes
+            if node['featureName'] != 'LEAF':
+                counterfactuals.append(Counterfactual(
+                    feature=node['featureName'],
+                    currentValue=node['featureValue'],
+                    thresholdValue=node['threshold'],
+                    alternativeIntent='ES' if model_type == 'MRO' else 'MRO'
+                ))
+
+        # Add leaf node to path
+        if path:
+            path.append({
+                'nodeId': len(path),
+                'condition': f'LEAF: {model_type} = {result.decision}',
+                'threshold': 0.0,
+                'featureValue': 0.0,
+                'featureName': 'LEAF',
+                'passed': True
             })
-        
-        visualizations.append({
-            "type": "histograms",
-            "path": str(histogram_path),
-            "url": f"{url_base}/visualizations/{histogram_path.name}"
-        })
-        
-        return {
-            "status": "success",
-            "timestamp": timestamp,
-            "kpi_columns": numeric_cols,
-            "base_url": url_base,
-            "visualizations": visualizations
-        }
-    
+
+        return DecisionTraceResponse(
+            intentId=intent_id,
+            intentLabel=model_type,
+            decision=result.decision,
+            confidence=result.confidence,
+            path=[DecisionNode(**node) for node in path],
+            topFeatures=top_features,
+            counterfactual=counterfactuals,
+            featureSnapshot=result.feature_values,
+            timestamp=datetime.now().isoformat()
+        )
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error visualizing KPI data: {str(e)}")
+        logger.error(f"Prediction trace error: {e}")
+        raise HTTPException(status_code=500, detail=f"Prediction trace failed: {str(e)}")
 
-
-@app.post("/kpi/report")
-async def generate_kpi_report(
-    file_path: str = Query(..., description="Path to CSV file with KPI data"),
-    report_title: str = Query("5G KPI Analysis Report", description="Title for the report"),
-    report_type: str = Query("mro", description="Type of report: 'mro' or 'es'"),
-    kpi_columns: str = Query(None, description="Comma-separated list of KPI columns to analyze"),
-    base_url: str = Query(None, description="Base URL for accessing visualizations. Defaults to BASE_URL env variable or http://172.16.28.63:8001")
-):
-
+# Model info endpoints
+@app.get("/models/{model_type}/info", response_model=ModelInfoResponse, tags=["Models"])
+async def get_model_info(model_type: str):
     """
-    Generate a comprehensive markdown report with KPI analysis and visualizations.
-    Returns the markdown content directly along with metadata.
+    Get information about a specific model
+
+    **Parameters:**
+    - **model_type**: Either 'ES' or 'MRO'
+
+    **Returns:** Model metadata including features and type
     """
     try:
-        # Use provided base_url or fall back to global BASE_URL
-        url_base = base_url if base_url else BASE_URL
-        
-        file_path_obj = Path(file_path)
-        if not file_path_obj.exists():
-            raise HTTPException(status_code=404, detail=f"File not found: {file_path}")
-        
-        df = pd.read_csv(file_path)
-        
-        # Get numeric columns
-        if kpi_columns:
-            selected_columns = [col.strip() for col in kpi_columns.split(',')]
-            numeric_cols = [col for col in selected_columns if col in df.columns and pd.api.types.is_numeric_dtype(df[col])]
-        else:
-            numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns.tolist()
-        
-        if not numeric_cols:
-            raise HTTPException(status_code=400, detail="No numeric KPI columns found")
-        
-        # Generate visualizations first with absolute URLs
-        viz_result = await visualize_kpi_data(file_path=file_path, kpi_columns=kpi_columns, base_url=url_base)
-        
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        report_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
-        # Calculate statistics
-        stats_df = df[numeric_cols].describe()
-        
-        # Build markdown report
-        markdown_content = f"""# {report_title}
-
-**Generated:** {timestamp}  
-**Data Source:** `{file_path}`  
-**Total Records:** {len(df)}  
-**KPIs Analyzed:** {len(numeric_cols)}
-
----
-
-## 1. Executive Summary
-
-This report presents a comprehensive analysis of 5G KPI data containing {len(df)} records across {len(numeric_cols)} key performance indicators.
-
-### Key Metrics Analyzed:
-"""
-        
-        for col in numeric_cols:
-            markdown_content += f"- {col}\n"
-        
-        markdown_content += f"""
----
-
-## 2. Data Overview
-
-### Dataset Information
-- **Shape:** {df.shape[0]} rows × {df.shape[1]} columns
-- **Date Range:** {df.index[0]} to {df.index[-1]} (by index)
-- **Missing Values:** {df[numeric_cols].isnull().sum().sum()} total
-
-### Column Data Types
-"""
-        
-        for col in df.columns:
-            markdown_content += f"- **{col}:** {df[col].dtype}\n"
-        
-        markdown_content += """
----
-
-## 3. Statistical Summary
-
-"""
-        
-        # Add statistics table
-        markdown_content += "| Metric | " + " | ".join(numeric_cols) + " |\n"
-        markdown_content += "|" + "---|" * (len(numeric_cols) + 1) + "\n"
-        
-        for stat in ['mean', 'std', 'min', '25%', '50%', '75%', 'max']:
-            row_values = [f"{stats_df.loc[stat, col]:.2f}" for col in numeric_cols]
-            markdown_content += f"| **{stat}** | " + " | ".join(row_values) + " |\n"
-        
-        markdown_content += """
----
-
-## 4. Visualizations
-
-### 4.1 Time Series Analysis
-"""
-        
-        # Add time series plot with ABSOLUTE URL
-        timeseries_viz = [v for v in viz_result['visualizations'] if v and v['type'] == 'timeseries'][0]
-        markdown_content += f"\n![KPI Time Series]({timeseries_viz['url']})\n\n"
-        markdown_content += "The time series plot shows the trend of all KPIs over the observation period.\n\n"
-        
-        markdown_content += "### 4.2 Distribution Analysis\n\n"
-        
-        # Add box plot with ABSOLUTE URL
-        boxplot_viz = [v for v in viz_result['visualizations'] if v and v['type'] == 'boxplot'][0]
-        markdown_content += f"![KPI Box Plots]({boxplot_viz['url']})\n\n"
-        markdown_content += "Box plots reveal the distribution, median, and outliers for each KPI.\n\n"
-        
-        # Add histograms with ABSOLUTE URL
-        histogram_viz = [v for v in viz_result['visualizations'] if v and v['type'] == 'histograms'][0]
-        markdown_content += f"![KPI Histograms]({histogram_viz['url']})\n\n"
-        markdown_content += "Histograms show the frequency distribution of values for each KPI.\n\n"
-        
-        # Add heatmap if available with ABSOLUTE URL
-        if len(numeric_cols) > 1:
-            markdown_content += "### 4.3 Correlation Analysis\n\n"
-            heatmap_viz = [v for v in viz_result['visualizations'] if v and v['type'] == 'heatmap'][0]
-            markdown_content += f"![KPI Correlation Heatmap]({heatmap_viz['url']})\n\n"
-            markdown_content += "The correlation heatmap shows relationships between different KPIs. Strong positive correlations appear in red, while negative correlations appear in blue.\n\n"
-        
-        markdown_content += """
----
-
-## 5. Key Findings
-
-"""
-        
-        # Add insights for each KPI
-        for col in numeric_cols:
-            mean_val = df[col].mean()
-            std_val = df[col].std()
-            min_val = df[col].min()
-            max_val = df[col].max()
-            
-            markdown_content += f"""### {col}
-- **Average:** {mean_val:.2f}
-- **Standard Deviation:** {std_val:.2f}
-- **Range:** {min_val:.2f} to {max_val:.2f}
-- **Coefficient of Variation:** {(std_val/mean_val*100):.2f}%
-
-"""
-        
-        markdown_content += """
----
-
-## 6. Recommendations
-
-Based on the analysis:
-
-1. Monitor KPIs that show high variability or unexpected trends
-2. Investigate any outliers identified in the box plots
-3. Consider the correlations between KPIs when optimizing network performance
-4. Track time-based trends to identify patterns or degradation
-
----
-
-**Report End**
-
-*Generated automatically by 5G KPI Analysis System*
-"""
-        
-        # Save report
-        # Save report
-        report_filename = f"kpi_report_{report_timestamp}.md"
-        
-        # Select directory based on type
-        target_dir = ES_DIR if report_type.lower() == "es" else MRO_DIR
-        report_path = target_dir / report_filename
-        
-        with open(report_path, 'w', encoding='utf-8') as f:
-            f.write(markdown_content)
-        
-        return {
-            "status": "success",
-            "report_path": str(report_path),
-            "report_filename": report_filename,
-            "report_type": report_type,
-            "report_url": f"{url_base}/network-manager/reports/download/{report_type}/{report_filename}",
-            "markdown_content": markdown_content,
-            "timestamp": timestamp,
-            "kpi_count": len(numeric_cols),
-            "record_count": len(df),
-            "base_url": url_base,
-            "visualizations": viz_result['visualizations']
-        }
-    
+        model_service = get_model_service()
+        info = model_service.get_model_info(model_type)
+        return ModelInfoResponse(**info)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
+        logger.error(f"Model info error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/models", tags=["Models"])
+async def list_models():
+    """List all available models"""
+    return JSONResponse({
+        "models": [
+            {
+                "type": "ES",
+                "name": "Energy Saving Model",
+                "endpoint": "/predict",
+                "features": 9
+            },
+            {
+                "type": "MRO",
+                "name": "Mobility Robustness Optimization Model",
+                "endpoint": "/predict",
+                "features": 8
+            }
+        ]
+    })
 
-@app.get("/network-manager/reports/download/{report_type}/{filename}")
-async def download_report(report_type: str, filename: str):
+# Batch prediction endpoint
+@app.post("/predict/batch", tags=["Prediction"])
+async def predict_batch(requests: List[PredictionRequest]):
     """
-    Download a generated markdown report.
-    """
-    target_dir = ES_DIR if report_type.lower() == "es" else MRO_DIR
-    report_path = target_dir / filename
-    
-    if not report_path.exists():
-        raise HTTPException(status_code=404, detail="Report not found")
-    
-    return FileResponse(
-        path=report_path,
-        media_type='text/markdown',
-        filename=filename
-    )
+    Make predictions for multiple samples
 
+    **Parameters:**
+    - **requests**: List of prediction requests
 
-@app.get("/network-manager/reports/list")
-async def list_reports(type: str = Query("mro", description="Report type: 'mro' or 'es'")):
-    """
-    List all generated reports for a specific type.
+    **Returns:** List of prediction results
     """
     try:
-        reports = []
-        target_dir = ES_DIR if type.lower() == "es" else MRO_DIR
-        
-        for report_file in target_dir.glob("*.md"):
-            reports.append({
-                "filename": report_file.name,
-                "path": str(report_file),
-                "type": type,
-                "size": report_file.stat().st_size,
-                "created": datetime.fromtimestamp(report_file.stat().st_ctime).strftime("%Y-%m-%d %H:%M:%S"),
-                "download_url": f"{BASE_URL}/network-manager/reports/download/{type}/{report_file.name}"
-            })
-        
-        reports.sort(key=lambda x: x['created'], reverse=True)
-        
-        return {
-            "total_reports": len(reports),
-            "reports": reports
-        }
-    
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing reports: {str(e)}")
+        model_service = get_model_service()
+        results = []
 
+        for req in requests:
+            model_type = req.model_type.upper()
+            if model_type == 'ES':
+                result = model_service.predict_es(req.features)
+            elif model_type == 'MRO':
+                result = model_service.predict_mro(req.features)
+            else:
+                results.append({
+                    "error": f"Invalid model_type: {req.model_type}",
+                    "intent_id": req.intent_id
+                })
+                continue
 
-@app.get("/visualizations/list")
-async def list_visualizations():
-    """
-    List all generated visualization images.
-    """
-    try:
-        visualizations = []
-        for viz_file in VISUALIZATIONS_DIR.glob("*.png"):
-            visualizations.append({
-                "filename": viz_file.name,
-                "path": str(viz_file),
-                "size": viz_file.stat().st_size,
-                "created": datetime.fromtimestamp(viz_file.stat().st_ctime).strftime("%Y-%m-%d %H:%M:%S"),
-                "url": f"{BASE_URL}/visualizations/{viz_file.name}"
+            results.append({
+                "intent_id": req.intent_id,
+                "model_type": result.model_type,
+                "decision": result.decision,
+                "confidence": result.confidence,
+                "probabilities": result.probabilities
             })
-        
-        visualizations.sort(key=lambda x: x['created'], reverse=True)
-        
-        return {
-            "total_visualizations": len(visualizations),
-            "visualizations": visualizations
-        }
-    
+
+        return JSONResponse({"results": results, "count": len(results)})
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error listing visualizations: {str(e)}")
+        logger.error(f"Batch prediction error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8181, reload=True)

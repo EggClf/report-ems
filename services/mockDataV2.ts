@@ -12,11 +12,15 @@ import {
   Priority,
   ExecutionStatus
 } from '../types-v2';
+import { mlModelAPI, generateSampleFeatures } from './mlModelAPI';
 
 // Helper function to generate random data
 const randomBetween = (min: number, max: number) => Math.random() * (max - min) + min;
 const randomInt = (min: number, max: number) => Math.floor(randomBetween(min, max));
 const randomChoice = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+
+// Configuration flag to toggle between mock and real API
+const USE_REAL_API = true; // Set to false to use mock data only
 
 const regions = ['Hà Nam', 'Khánh Hòa'];
 const intentLabels: IntentLabel[] = ['MRO', 'ES', 'QoS', 'TS'];
@@ -68,7 +72,7 @@ export const getMockOverviewData = (): OverviewData => {
 // Mock Hotspots Data
 export const getMockHotspots = (): Hotspot[] => {
   const hotspots: Hotspot[] = [];
-  
+
   for (let i = 0; i < 15; i++) {
     hotspots.push({
       id: `hotspot_${i}`,
@@ -91,7 +95,7 @@ export const getMockHotspots = (): Hotspot[] => {
       intentLabel: randomChoice(intentLabels)
     });
   }
-  
+
   // Sort by severity score descending
   return hotspots.sort((a, b) => b.severityScore - a.severityScore);
 };
@@ -100,7 +104,7 @@ export const getMockHotspots = (): Hotspot[] => {
 export const getMockIntents = (): Intent[] => {
   const intents: Intent[] = [];
   const now = Date.now();
-  
+
   for (let i = 0; i < 20; i++) {
     const scopeType = randomChoice(['cell', 'cluster'] as const);
     intents.push({
@@ -116,7 +120,7 @@ export const getMockIntents = (): Intent[] => {
       priority: randomChoice(priorities)
     });
   }
-  
+
   return intents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 };
 
@@ -124,7 +128,7 @@ export const getMockIntents = (): Intent[] => {
 export const getMockIntentDistribution = (): IntentDistribution[] => {
   const distribution: IntentDistribution[] = [];
   const now = Date.now();
-  
+
   // Last 24 hours, every hour
   for (let i = 24; i >= 0; i--) {
     const timestamp = new Date(now - i * 3600 * 1000);
@@ -138,12 +142,31 @@ export const getMockIntentDistribution = (): IntentDistribution[] => {
       }
     });
   }
-  
+
   return distribution;
 };
 
 // Mock Decision Tree Trace
-export const getMockDecisionTreeTrace = (intentId: string): DecisionTreeTrace => {
+export const getMockDecisionTreeTrace = async (intentId: string, intentLabel?: IntentLabel): Promise<DecisionTreeTrace> => {
+  // Determine model type from intent label (default to ES if not specified)
+  const modelType = intentLabel === 'MRO' ? 'MRO' : 'ES';
+
+  // Try to use real API if enabled
+  if (USE_REAL_API) {
+    try {
+      const isHealthy = await mlModelAPI.healthCheck();
+      if (isHealthy) {
+        console.log('✓ Using real ML API for decision tree trace');
+        const features = generateSampleFeatures(modelType);
+        return await mlModelAPI.getDecisionTreeTrace(intentId, modelType, features);
+      }
+    } catch (error) {
+      console.warn('⚠ ML API unavailable, falling back to mock data:', error);
+    }
+  }
+
+  // Fallback to mock data
+  console.log('Using mock decision tree trace');
   const features = [
     { name: 'PRB_Utilization', value: 87.5 },
     { name: 'Avg_CQI', value: 8.2 },
@@ -154,10 +177,10 @@ export const getMockDecisionTreeTrace = (intentId: string): DecisionTreeTrace =>
     { name: 'Active_Users', value: 432 },
     { name: 'Energy_Efficiency_Mbps_per_W', value: 2.3 }
   ];
-  
+
   return {
     intentId,
-    intentLabel: 'TS',
+    intentLabel: intentLabel || 'ES',
     path: [
       {
         nodeId: 0,
@@ -185,7 +208,7 @@ export const getMockDecisionTreeTrace = (intentId: string): DecisionTreeTrace =>
       },
       {
         nodeId: 11,
-        condition: 'LEAF: TS',
+        condition: 'LEAF: ES',
         threshold: 0,
         featureValue: 0,
         featureName: 'LEAF',
@@ -202,7 +225,7 @@ export const getMockDecisionTreeTrace = (intentId: string): DecisionTreeTrace =>
         feature: 'PRB_Utilization',
         currentValue: 87.5,
         thresholdValue: 80.0,
-        alternativeIntent: 'ES'
+        alternativeIntent: 'MRO'
       },
       {
         feature: 'Active_Users',
@@ -283,10 +306,10 @@ export const getMockPlannerOutput = (intentId: string): PlannerOutput => {
 const generateExecutionLogs = (executionId: string, planId: string, intentId: string): ExecutionLog[] => {
   const statuses: ExecutionStatus[] = ['sent', 'ack', 'applied'];
   const targetCell = generateCellId();
-  
+
   const logs: ExecutionLog[] = [];
   const now = Date.now();
-  
+
   statuses.forEach((status, index) => {
     logs.push({
       executionId,
@@ -298,7 +321,7 @@ const generateExecutionLogs = (executionId: string, planId: string, intentId: st
       errorReason: status === 'failed' ? 'Connection timeout' : undefined
     });
   });
-  
+
   // Randomly add a failure or rollback
   if (Math.random() > 0.8) {
     logs.push({
@@ -311,7 +334,7 @@ const generateExecutionLogs = (executionId: string, planId: string, intentId: st
       errorReason: randomChoice(['Connection timeout', 'Parameter validation failed', 'Vendor API error'])
     });
   }
-  
+
   return logs;
 };
 
@@ -356,7 +379,7 @@ const generateKPIDeltas = (): KPIDelta[] => {
 // Mock Execution Outcome
 export const getMockExecutionOutcome = (planId: string, intentId: string): ExecutionOutcome => {
   const executionId = `exec_${Date.now()}`;
-  
+
   return {
     executionId,
     planId,
@@ -375,18 +398,18 @@ export const getMockExecutionOutcome = (planId: string, intentId: string): Execu
 };
 
 // Get all mock data
-export const getAllMockData = () => {
+export const getAllMockData = async () => {
   const overview = getMockOverviewData();
   const hotspots = getMockHotspots();
   const intents = getMockIntents();
   const intentDistribution = getMockIntentDistribution();
-  
+
   // Get detailed data for the first intent
   const firstIntent = intents[0];
-  const decisionTrace = getMockDecisionTreeTrace(firstIntent.id);
+  const decisionTrace = await getMockDecisionTreeTrace(firstIntent.id, firstIntent.intentLabel);
   const plannerOutput = getMockPlannerOutput(firstIntent.id);
   const executionOutcome = getMockExecutionOutcome(plannerOutput.planId, firstIntent.id);
-  
+
   return {
     overview,
     hotspots,
