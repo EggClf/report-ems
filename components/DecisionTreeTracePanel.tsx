@@ -7,6 +7,12 @@ interface DecisionTreeTracePanelProps {
 }
 
 export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
+  const finalActionLabel = trace.intentLabel === 'MRO'
+    ? 'Apply MRO'
+    : trace.intentLabel === 'ES'
+      ? 'Apply ES'
+      : trace.intentLabel;
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
@@ -18,7 +24,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
         <div className="flex items-center justify-between">
           <div>
             <div className="text-sm text-slate-600">Final Intent</div>
-            <div className="text-2xl font-bold text-indigo-700">{trace.intentLabel}</div>
+            <div className="text-2xl font-bold text-indigo-700">{finalActionLabel}</div>
           </div>
           <div className="text-right">
             <div className="text-sm text-slate-600">Intent ID</div>
