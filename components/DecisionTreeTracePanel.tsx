@@ -7,11 +7,11 @@ interface DecisionTreeTracePanelProps {
 }
 
 export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
-  const finalActionLabel = trace.intentLabel === 'MRO'
-    ? 'Apply MRO'
-    : trace.intentLabel === 'ES'
-      ? 'Apply ES'
-      : trace.intentLabel;
+  const finalActionLabel = (trace.intentLabel === 'MRO' || trace.intentLabel === 'ES')
+    ? (trace.decision === false
+        ? `Do not apply ${trace.intentLabel}`
+        : `Apply ${trace.intentLabel}`)
+    : trace.intentLabel;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -43,15 +43,15 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
           <div className="space-y-2">
             {trace.path.map((node, idx) => {
               const isLeaf = node.featureName === 'LEAF';
-              
+
               return (
                 <div key={node.nodeId} className="relative">
                   {idx > 0 && (
                     <div className="absolute left-5 -top-2 w-0.5 h-4 bg-slate-300"></div>
                   )}
                   <div className={`flex items-start gap-3 p-3 rounded-lg border-2 ${
-                    node.passed 
-                      ? 'bg-green-50 border-green-300' 
+                    node.passed
+                      ? 'bg-green-50 border-green-300'
                       : 'bg-red-50 border-red-300'
                   }`}>
                     <div className="mt-0.5">
@@ -176,8 +176,8 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
       {/* Explanation Footer */}
       <div className="mt-4 p-3 bg-slate-100 border border-slate-300 rounded-lg">
         <div className="text-xs text-slate-700">
-          <strong>How to read:</strong> The decision tree evaluated {trace.path.length} nodes. 
-          Each node checked a condition against feature values from the network snapshot. 
+          <strong>How to read:</strong> The decision tree evaluated {trace.path.length} nodes.
+          Each node checked a condition against feature values from the network snapshot.
           The path shows which branches were taken to reach the final intent classification.
         </div>
       </div>
