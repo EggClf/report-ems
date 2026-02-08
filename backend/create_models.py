@@ -1,18 +1,21 @@
 """
-Script to create mock ML models for ES and MRO based on skill.md specifications
+Script to create ML models for ES and MRO from CSV datasets
 """
 import numpy as np
 import pandas as pd
-import pickle
-from sklearn.ensemble import RandomForestClassifier
+import joblib
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
+from pathlib import Path
 
 # Set random seed for reproducibility
 np.random.seed(42)
 
-def create_es_model():
-    """Create Energy Saving (ES) model"""
+def create_es_model(csv_path: str = 'data/dataset_es.csv'):
+    """Create Energy Saving (ES) model from CSV data"""
     print("Creating ES model...")
+
+    csv_file = Path(csv_path)
 
     # Feature names for ES
     feature_names = [
@@ -27,38 +30,59 @@ def create_es_model():
         'n_alarm'
     ]
 
-    # Generate mock training data (1000 samples)
-    n_samples = 1000
-    data = {}
+    # Check if CSV file exists
+    if csv_file.exists():
+        print(f"  Loading data from {csv_path}")
+        df = pd.read_csv(csv_path)
 
-    for feature in feature_names:
-        if feature == 'Weather Sensitivity Score':
-            # Range: -1 to 1
-            data[feature] = np.random.uniform(-1, 1, n_samples)
-        elif feature == 'n_alarm':
-            # Integer alarm count
-            data[feature] = np.random.randint(0, 10, n_samples)
-        else:
-            # Range: 0 to 1
-            data[feature] = np.random.uniform(0, 1, n_samples)
+        # Drop unnecessary columns if they exist
+        columns_to_drop = ['intent_id', 'task_type', 'timestamp', 'cellname', 'recommendation']
+        df = df.drop([col for col in columns_to_drop if col in df.columns], axis=1, errors='ignore')
 
-    # Create DataFrame
-    df = pd.DataFrame(data)
+        # Ensure we have the decision column
+        if 'decision' not in df.columns:
+            raise ValueError("CSV must contain 'decision' column")
 
-    # Generate decision labels based on some logic
-    # True if energy inefficiency is high, load is low, and alarms are low
-    df['decision'] = (
-        (df['Energy Inefficiency Score'] > 0.6) &
-        (df['Persistent Low Load Score'] > 0.5) &
-        (df['n_alarm'] < 5)
-    ).astype(bool)
+        # Extract features and target
+        X = df[feature_names]
+        y = df['decision']
 
-    # Prepare features and labels
-    X = df[feature_names]
-    y = df['decision']
+        print(f"  Loaded {len(df)} samples from CSV")
+    else:
+        print(f"  CSV file not found at {csv_path}, generating mock data...")
+
+        # Generate mock training data (1000 samples)
+        n_samples = 1000
+        data = {}
+
+        for feature in feature_names:
+            if feature == 'Weather Sensitivity Score':
+                # Range: -1 to 1
+                data[feature] = np.random.uniform(-1, 1, n_samples)
+            elif feature == 'n_alarm':
+                # Integer alarm count
+                data[feature] = np.random.randint(0, 10, n_samples)
+            else:
+                # Range: 0 to 1
+                data[feature] = np.random.uniform(0, 1, n_samples)
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+
+        # Generate decision labels based on some logic
+        df['decision'] = (
+            (df['Energy Inefficiency Score'] > 0.6) &
+            (df['Persistent Low Load Score'] > 0.5) &
+            (df['n_alarm'] < 5)
+        ).astype(bool)
+
+        X = df[feature_names]
+        y = df['decision']
+
+        print(f"  Generated {len(df)} mock samples")
 
     # Train model
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = DecisionTreeClassifier(random_state=42, max_depth=20)
     model.fit(X, y)
 
     # Save model with feature names
@@ -68,17 +92,23 @@ def create_es_model():
         'model_type': 'ES'
     }
 
-    with open('es_model.pkl', 'wb') as f:
-        pickle.dump(model_data, f)
+    output_path = Path('models/es_model.pkl')
+    output_path.parent.mkdir(exist_ok=True)
 
-    print(f"✓ ES model saved to es_model.pkl")
+    with open(output_path, 'wb') as f:
+        joblib.dump(model_data, f)
+
+    print(f"✓ ES model saved to {output_path}")
     print(f"  Features: {len(feature_names)}")
+    print(f"  Training samples: {len(X)}")
     print(f"  Training accuracy: {model.score(X, y):.2%}")
     print(f"  True decisions: {y.sum()} / {len(y)} ({y.sum()/len(y):.1%})")
     print()
 
-def create_mro_model():
-    """Create MRO model"""
+    return model, feature_names
+
+def create_mro_model(csv_path: str = '../data/dataset_mro.csv'):
+    """Create MRO model from CSV data"""
     print("Creating MRO model...")
 
     # Feature names for MRO
@@ -93,38 +123,61 @@ def create_mro_model():
         'Social Event Score'
     ]
 
-    # Generate mock training data (1000 samples)
-    n_samples = 1000
-    data = {}
+    csv_file = Path(csv_path)
 
-    for feature in feature_names:
-        if feature == 'Weather-Driven Mobility Risk':
-            # Range: -1 to 1
-            data[feature] = np.random.uniform(-1, 1, n_samples)
-        elif feature == 'n_alarm':
-            # Integer alarm count
-            data[feature] = np.random.randint(0, 10, n_samples)
-        else:
-            # Range: 0 to 1
-            data[feature] = np.random.uniform(0, 1, n_samples)
+    # Check if CSV file exists
+    if csv_file.exists():
+        print(f"  Loading data from {csv_path}")
+        df = pd.read_csv(csv_path)
 
-    # Create DataFrame
-    df = pd.DataFrame(data)
+        # Drop unnecessary columns if they exist
+        columns_to_drop = ['intent_id', 'task_type', 'timestamp', 'cellname', 'recommendation']
+        df = df.drop([col for col in columns_to_drop if col in df.columns], axis=1, errors='ignore')
 
-    # Generate decision labels based on some logic
-    # True if handover failure pressure is high, stability is low, and alarms are high
-    df['decision'] = (
-        (df['Handover Failure Pressure'] > 0.6) &
-        (df['Handover Success Stability'] < 0.4) &
-        (df['n_alarm'] > 4)
-    ).astype(bool)
+        # Ensure we have the decision column
+        if 'decision' not in df.columns:
+            raise ValueError("CSV must contain 'decision' column")
 
-    # Prepare features and labels
-    X = df[feature_names]
-    y = df['decision']
+        # Extract features and target
+        X = df[feature_names]
+        y = df['decision']
+
+        print(f"  Loaded {len(df)} samples from CSV")
+    else:
+        print(f"  CSV file not found at {csv_path}, generating mock data...")
+
+        # Generate mock training data (1000 samples)
+        n_samples = 1000
+        data = {}
+
+        for feature in feature_names:
+            if feature == 'Weather-Driven Mobility Risk':
+                # Range: -1 to 1
+                data[feature] = np.random.uniform(-1, 1, n_samples)
+            elif feature == 'n_alarm':
+                # Integer alarm count
+                data[feature] = np.random.randint(0, 10, n_samples)
+            else:
+                # Range: 0 to 1
+                data[feature] = np.random.uniform(0, 1, n_samples)
+
+        # Create DataFrame
+        df = pd.DataFrame(data)
+
+        # Generate decision labels based on some logic
+        df['decision'] = (
+            (df['Handover Failure Pressure'] > 0.6) &
+            (df['Handover Success Stability'] < 0.4) &
+            (df['n_alarm'] > 4)
+        ).astype(bool)
+
+        X = df[feature_names]
+        y = df['decision']
+
+        print(f"  Generated {len(df)} mock samples")
 
     # Train model
-    model = RandomForestClassifier(n_estimators=100, random_state=42)
+    model = DecisionTreeClassifier(random_state=42, max_depth=20)
     model.fit(X, y)
 
     # Save model with feature names
@@ -134,22 +187,33 @@ def create_mro_model():
         'model_type': 'MRO'
     }
 
-    with open('mro_model.pkl', 'wb') as f:
-        pickle.dump(model_data, f)
+    output_path = Path('models/mro_model.pkl')
+    output_path.parent.mkdir(exist_ok=True)
 
-    print(f"✓ MRO model saved to mro_model.pkl")
+    with open(output_path, 'wb') as f:
+        joblib.dump(model_data, f)
+
+    print(f"✓ MRO model saved to {output_path}")
     print(f"  Features: {len(feature_names)}")
+    print(f"  Training samples: {len(X)}")
     print(f"  Training accuracy: {model.score(X, y):.2%}")
     print(f"  True decisions: {y.sum()} / {len(y)} ({y.sum()/len(y):.1%})")
     print()
+
+    return model, feature_names
 
 def test_models():
     """Test loading and using the models"""
     print("Testing models...")
 
     # Test ES model
-    with open('es_model.pkl', 'rb') as f:
-        es_data = pickle.load(f)
+    es_model_path = Path('models/es_model.pkl')
+    if not es_model_path.exists():
+        print("ES model not found, skipping test")
+        return
+
+    with open(es_model_path, 'rb') as f:
+        es_data = joblib.load(f)
 
     es_model = es_data['model']
     es_features = es_data['feature_names']
@@ -176,8 +240,13 @@ def test_models():
     print()
 
     # Test MRO model
-    with open('mro_model.pkl', 'rb') as f:
-        mro_data = pickle.load(f)
+    mro_model_path = Path('models/mro_model.pkl')
+    if not mro_model_path.exists():
+        print("MRO model not found, skipping test")
+        return
+
+    with open(mro_model_path, 'rb') as f:
+        mro_data = joblib.load(f)
 
     mro_model = mro_data['model']
     mro_features = mro_data['feature_names']
@@ -203,13 +272,19 @@ def test_models():
     print()
 
 if __name__ == "__main__":
+    import sys
+
     print("=" * 60)
     print("Creating ML Models for ES and MRO")
     print("=" * 60)
     print()
 
-    create_es_model()
-    create_mro_model()
+    # Allow custom CSV paths as command line arguments
+    es_csv_path = sys.argv[1] if len(sys.argv) > 1 else '../data/dataset_es.csv'
+    mro_csv_path = sys.argv[2] if len(sys.argv) > 2 else '../data/dataset_mro.csv'
+
+    create_es_model(es_csv_path)
+    create_mro_model(mro_csv_path)
     test_models()
 
     print("=" * 60)

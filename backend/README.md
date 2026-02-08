@@ -190,7 +190,7 @@ Response:
   "model_type": "ES",
   "features": ["confidence", "Persistent Low Load Score", ...],
   "n_features": 9,
-  "model_class": "RandomForestClassifier"
+  "model_class": "DecisionTreeClassifier"
 }
 ```
 

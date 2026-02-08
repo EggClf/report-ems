@@ -2,7 +2,7 @@
 Model Service Layer for ES and MRO ML Models
 Handles model loading, prediction, and feature importance extraction
 """
-import pickle
+import joblib
 import numpy as np
 import pandas as pd
 from typing import Dict, List, Tuple, Any, Optional
@@ -34,11 +34,11 @@ class ModelService:
         """Load both ES and MRO models"""
         try:
             with open(self.es_model_path, 'rb') as f:
-                self.es_model_data = pickle.load(f)
+                self.es_model_data = joblib.load(f)
             print(f"✓ Loaded ES model from {self.es_model_path}")
 
             with open(self.mro_model_path, 'rb') as f:
-                self.mro_model_data = pickle.load(f)
+                self.mro_model_data = joblib.load(f)
             print(f"✓ Loaded MRO model from {self.mro_model_path}")
 
         except FileNotFoundError as e:
@@ -63,7 +63,7 @@ class ModelService:
         return df
 
     def _extract_feature_importances(self, model, feature_names: List[str]) -> Dict[str, float]:
-        """Extract feature importances from RandomForest model"""
+        """Extract feature importances from DecisionTree model"""
         if hasattr(model, 'feature_importances_'):
             importances = model.feature_importances_
             return {name: float(imp) for name, imp in zip(feature_names, importances)}
@@ -71,41 +71,45 @@ class ModelService:
 
     def _get_decision_path(self, model, X: pd.DataFrame, feature_names: List[str]) -> List[Dict[str, Any]]:
         """
-        Extract decision path from a tree-based model
-        For RandomForest, we use the first tree as representative
+        Extract decision path from DecisionTreeClassifier model
         """
         path_nodes = []
 
         try:
-            # Get the first tree from the forest
-            if hasattr(model, 'estimators_'):
-                tree = model.estimators_[0].tree_
+            # DecisionTreeClassifier has tree_ attribute
+            if not hasattr(model, 'tree_'):
+                print(f"Warning: Model type {type(model).__name__} does not support decision path extraction")
+                return path_nodes
 
-                # Get decision path for the sample
-                node_indicator = model.estimators_[0].decision_path(X)
-                node_index = node_indicator.indices[node_indicator.indptr[0]:node_indicator.indptr[1]]
+            tree = model.tree_
+            node_indicator = model.decision_path(X)
 
-                for node_id in node_index:
-                    # Skip leaf nodes initially
-                    if tree.feature[node_id] != -2:  # -2 indicates leaf node
-                        feature_idx = tree.feature[node_id]
-                        threshold = tree.threshold[node_id]
-                        feature_name = feature_names[feature_idx]
-                        feature_value = float(X.iloc[0][feature_name])
+            # Get decision path for the sample
+            node_index = node_indicator.indices[node_indicator.indptr[0]:node_indicator.indptr[1]]
 
-                        # Determine if condition passed
-                        passed = feature_value > threshold
+            for node_id in node_index:
+                # Skip leaf nodes initially
+                if tree.feature[node_id] != -2:  # -2 indicates leaf node
+                    feature_idx = tree.feature[node_id]
+                    threshold = tree.threshold[node_id]
+                    feature_name = feature_names[feature_idx]
+                    feature_value = float(X.iloc[0][feature_name])
 
-                        path_nodes.append({
-                            'nodeId': int(node_id),
-                            'condition': f'{feature_name} > {threshold:.2f}',
-                            'threshold': float(threshold),
-                            'featureValue': feature_value,
-                            'featureName': feature_name,
-                            'passed': passed
-                        })
+                    # Determine if condition passed
+                    passed = feature_value > threshold
+
+                    path_nodes.append({
+                        'nodeId': int(node_id),
+                        'condition': f'{feature_name} > {threshold:.2f}',
+                        'threshold': float(threshold),
+                        'featureValue': feature_value,
+                        'featureName': feature_name,
+                        'passed': passed
+                    })
         except Exception as e:
             print(f"Warning: Could not extract decision path: {e}")
+            import traceback
+            traceback.print_exc()
 
         return path_nodes
 
