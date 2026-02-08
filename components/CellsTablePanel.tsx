@@ -18,7 +18,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
     cell.ne_name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-// Check if cell has null/missing features  
+// Check if cell has null/missing features
   const hasValidFeatures = (cell: CellFeatures, modelType: 'ES' | 'MRO'): boolean => {
     if (modelType === 'ES') {
       const hasES = (cell['Energy Inefficiency Score'] !== null && cell['Energy Inefficiency Score'] !== undefined) &&

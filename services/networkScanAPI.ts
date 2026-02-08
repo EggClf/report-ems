@@ -188,15 +188,19 @@ class NetworkScanAPI {
     mroFeatures.forEach(mroCell => {
       const esCell = esFeaturesMap.get(mroCell.cellname);
       if (esCell) {
-        merged.push({
-          ...mroCell,
-          ...esCell,
-          // Preserve metadata from MRO
-          intent_id: mroCell.intent_id,
-          cellname: mroCell.cellname,
-          ne_name: mroCell.ne_name,
-          timestamp: mroCell.timestamp,
+        // Merge by taking non-null values from both, MRO first then ES
+        const mergedCell: any = { ...mroCell };
+        Object.entries(esCell).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            mergedCell[key] = value;
+          }
         });
+        // Always preserve metadata from MRO
+        mergedCell.intent_id = mroCell.intent_id;
+        mergedCell.cellname = mroCell.cellname;
+        mergedCell.ne_name = mroCell.ne_name;
+        mergedCell.timestamp = mroCell.timestamp;
+        merged.push(mergedCell as CellFeatures);
       } else {
         merged.push(mroCell);
       }
