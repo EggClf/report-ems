@@ -49,8 +49,12 @@ class NetworkScanAPI {
 
   /**
    * Fetch network scan data from the backend
+   * @param date - Optional date to fetch data for (defaults to today)
    */
-  async fetchNetworkScan(): Promise<NetworkScanData> {
+  async fetchNetworkScan(date?: Date): Promise<NetworkScanData> {
+    const targetDate = date || new Date();
+    const dateStr = targetDate.toISOString().split('T')[0];
+    
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
@@ -58,7 +62,7 @@ class NetworkScanAPI {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          timestamp: new Date().toISOString().split('T')[0] + 'T10:00:00',
+          timestamp: `${dateStr}T10:00:00`,
           enable_web_search: false,
         }),
       });

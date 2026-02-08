@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Network, RefreshCw, Activity, Menu } from 'lucide-react';
+import { Network, Calendar, Activity, Menu } from 'lucide-react';
 import { OverviewPanel } from './OverviewPanel';
 import { HotspotsMapPanel } from './HotspotsMapPanel';
 import { CellsTablePanel } from './CellsTablePanel';
@@ -21,7 +21,7 @@ import { Hotspot } from '../types-v2';
 import { DecisionTreeTrace } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [lastUpdate, setLastUpdate] = useState(new Date());
   const [selectedCell, setSelectedCell] = useState<CellFeatures | null>(null);
   const [selectedModelType, setSelectedModelType] = useState<'ES' | 'MRO'>('ES');
@@ -46,16 +46,16 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [plannerOutput, setPlannerOutput] = useState<any>(null);
   const [executionOutcome, setExecutionOutcome] = useState<any>(null);
 
-  // Load cell data on mount
+  // Load cell data when date changes
   useEffect(() => {
-    loadCellData();
-  }, []);
+    loadCellData(selectedDate);
+  }, [selectedDate]);
 
   // Load cell data from network scan API
-  const loadCellData = async () => {
+  const loadCellData = async (date: Date) => {
     setCellsLoading(true);
     try {
-      const data = await networkScanAPI.fetchNetworkScan();
+      const data = await networkScanAPI.fetchNetworkScan(date);
       setNetworkScanData(data);
       
       // Merge MRO and ES features
@@ -104,23 +104,10 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-
-    try {
-      // Refresh overview and hotspot data
-      setOverviewData(getMockOverviewData());
-      setHotspots(getMockHotspots());
-      
-      // Reload cell data from network scan
-      await loadCellData();
-      
-      setLastUpdate(new Date());
-    } catch (error) {
-      console.error('Refresh failed:', error);
-    } finally {
-      setRefreshing(false);
-    }
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = new Date(e.target.value + 'T00:00:00');
+    setSelectedDate(newDate);
+    setLastUpdate(new Date());
   };
 
   const handleHotspotClick = (hotspot: Hotspot) => {
@@ -201,15 +188,18 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               Last updated: {lastUpdate.toLocaleTimeString()}
             </div>
 
-            {/* Refresh Button */}
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              <span className="text-sm font-medium">Refresh</span>
-            </button>
+            {/* Date Picker */}
+            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700">
+              <Calendar className="w-4 h-4 text-indigo-400" />
+              <input
+                type="date"
+                value={selectedDate.toISOString().split('T')[0]}
+                onChange={handleDateChange}
+                max={new Date().toISOString().split('T')[0]}
+                className="bg-transparent text-sm font-medium text-slate-200 border-none outline-none cursor-pointer"
+                style={{ colorScheme: 'dark' }}
+              />
+            </div>
 
             {/* Loop Status Indicator */}
             <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700">
@@ -282,7 +272,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               {decisionTraceLoading ? (
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
-                    <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
+                    <Activity className="w-5 h-5 animate-pulse text-indigo-600" />
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>
