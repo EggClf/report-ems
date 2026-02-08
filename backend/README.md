@@ -39,7 +39,7 @@ python main.py
 Or with uvicorn directly:
 
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8181
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ### 4. Test the API
@@ -51,8 +51,8 @@ python test_api.py
 ## API Documentation
 
 Once the server is running, visit:
-- **Swagger UI**: http://localhost:8181/docs
-- **ReDoc**: http://localhost:8181/redoc
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
 
 ## Model Specifications
 
@@ -250,7 +250,7 @@ Request:
 import requests
 
 # Simple prediction
-response = requests.post('http://172.16.28.63:8181/predict', json={
+response = requests.post('http://localhost:8000/predict', json={
     'model_type': 'ES',
     'features': {
         'confidence': 0.8,
@@ -262,7 +262,7 @@ result = response.json()
 print(f"Decision: {result['decision']}, Confidence: {result['confidence']}")
 
 # With trace
-response = requests.post('http://172.16.28.63:8181/predict/trace', json={...})
+response = requests.post('http://localhost:8000/predict/trace', json={...})
 trace = response.json()
 print(f"Top feature: {trace['topFeatures'][0]['name']}")
 ```
@@ -290,7 +290,7 @@ const trace = await mlModelAPI.getDecisionTreeTrace(
 ### cURL
 
 ```bash
-curl -X POST http://172.16.28.63:8181/predict \
+curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
   -d '{
     "model_type": "ES",
@@ -341,7 +341,7 @@ Error response format:
 
 The backend is designed to integrate seamlessly with the React frontend:
 
-1. **Environment Variable**: Set `VITE_API_URL=http://172.16.28.63:8181` in `.env`
+1. **Environment Variable**: Set `VITE_API_URL=http://localhost:8000` in `.env`
 2. **API Service**: Use `mlModelAPI` from `services/mlModelAPI.ts`
 3. **Auto Fallback**: Frontend gracefully falls back to mock data if API is unavailable
 
@@ -376,7 +376,7 @@ uvicorn main:app --port 8001
 Check that CORS middleware is configured in [main.py](main.py)
 
 ### Frontend can't connect
-1. Verify backend is running: `curl http://172.16.28.63:8181/health`
+1. Verify backend is running: `curl http://localhost:8000/health`
 2. Check `.env` has correct `VITE_API_URL`
 3. Look for CORS errors in browser console
 

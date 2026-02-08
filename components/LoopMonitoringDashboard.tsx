@@ -279,11 +279,19 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
             {/* Panel 4: Decision Tree Trace */}
             <div ref={(el) => { sectionRefs.current['decision-trace'] = el; }} id="decision-trace">
-              {decisionTraceLoading || !decisionTrace ? (
+              {decisionTraceLoading ? (
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
                     <RefreshCw className="w-5 h-5 animate-spin text-indigo-600" />
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
+                  </div>
+                </div>
+              ) : !decisionTrace ? (
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                  <div className="text-center text-gray-500">
+                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
+                    <p className="text-sm">Click on any cell in the table above to run ML prediction and view the decision tree trace.</p>
                   </div>
                 </div>
               ) : (
@@ -292,14 +300,18 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Panel 5: Planner Output */}
-            <div ref={(el) => { sectionRefs.current['planner'] = el; }} id="planner">
-              <PlannerOutputPanel planner={plannerOutput} />
-            </div>
+            {plannerOutput && (
+              <div ref={(el) => { sectionRefs.current['planner'] = el; }} id="planner">
+                <PlannerOutputPanel planner={plannerOutput} />
+              </div>
+            )}
 
             {/* Panel 6: Execution & Outcome */}
-            <div ref={(el) => { sectionRefs.current['execution'] = el; }} id="execution">
-              <ExecutionOutcomePanel outcome={executionOutcome} />
-            </div>
+            {executionOutcome && (
+              <div ref={(el) => { sectionRefs.current['execution'] = el; }} id="execution">
+                <ExecutionOutcomePanel outcome={executionOutcome} />
+              </div>
+            )}
           </div>
         </div>
       </div>

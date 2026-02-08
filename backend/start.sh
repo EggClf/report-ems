@@ -22,8 +22,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "🚀 Starting API server..."
-echo "   URL: http://172.16.28.63:8181"
-echo "   Docs: http://172.16.28.63:8181/docs"
+echo "   URL: http://localhost:8000"
+echo "   Docs: http://localhost:8000/docs"
 echo ""
 echo "Press Ctrl+C to stop"
 echo ""
