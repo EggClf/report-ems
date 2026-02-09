@@ -14,19 +14,19 @@ export const IntentLegend: React.FC = () => {
       name: 'Energy Saving',
       description: 'Identifies opportunities to reduce power consumption while maintaining QoS',
       color: 'bg-green-100 text-green-700 border-green-300'
-    },
-    { 
-      label: 'QoS', 
-      name: 'Quality of Service',
-      description: 'Ensures service level agreements and 5QI requirements are met',
-      color: 'bg-orange-100 text-orange-700 border-orange-300'
-    },
-    { 
-      label: 'TS', 
-      name: 'Traffic Steering',
-      description: 'Balances load across cells and optimize inter-frequency resource allocation',
-      color: 'bg-blue-100 text-blue-700 border-blue-300'
     }
+    // { 
+    //   label: 'QoS', 
+    //   name: 'Quality of Service',
+    //   description: 'Ensures service level agreements and 5QI requirements are met',
+    //   color: 'bg-orange-100 text-orange-700 border-orange-300'
+    // },
+    // { 
+    //   label: 'TS', 
+    //   name: 'Traffic Steering',
+    //   description: 'Balances load across cells and optimize inter-frequency resource allocation',
+    //   color: 'bg-blue-100 text-blue-700 border-blue-300'
+    // }
   ];
 
   return (

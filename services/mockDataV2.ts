@@ -23,7 +23,7 @@ const randomChoice = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.len
 const USE_REAL_API = true; // Set to false to use mock data only
 
 const regions = ['Hà Nam', 'Khánh Hòa'];
-const intentLabels: IntentLabel[] = ['MRO', 'ES', 'QoS', 'TS'];
+const intentLabels: IntentLabel[] = ['MRO', 'ES']; // 'QoS', 'TS' not supported yet
 const priorities: Priority[] = ['critical', 'high', 'medium', 'low'];
 
 // 5G Cell ID format: eNB_ID + Cell_ID (e.g., 12345_1 for first cell of eNB 12345)
@@ -136,9 +136,9 @@ export const getMockIntentDistribution = (): IntentDistribution[] => {
       timestamp,
       intents: {
         'MRO': randomInt(2, 12),
-        'ES': randomInt(5, 18),
-        'QoS': randomInt(1, 10),
-        'TS': randomInt(3, 15)
+        'ES': randomInt(5, 18)
+        // 'QoS': randomInt(1, 10),  // Not supported yet
+        // 'TS': randomInt(3, 15)     // Not supported yet
       }
     });
   }
@@ -246,7 +246,7 @@ export const getMockPlannerOutput = (intentId: string): PlannerOutput => {
   return {
     planId: `plan_${Date.now()}`,
     intentId,
-    useCase: randomChoice(['ES', 'MRO', 'TS', 'QoS'] as const),
+    useCase: randomChoice(['ES', 'MRO'] as const), // 'TS', 'QoS' not supported yet
     candidateActions: [
       {
         id: 'action_1',

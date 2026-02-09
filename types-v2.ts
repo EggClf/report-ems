@@ -3,7 +3,7 @@
 export type LoopStatus = 'running' | 'degraded' | 'paused';
 export type AlertType = 'policy_blocked' | 'action_failed' | 'kpi_guardrail_violated';
 export type Priority = 'critical' | 'high' | 'medium' | 'low';
-export type IntentLabel = 'MRO' | 'ES' | 'QoS' | 'TS';
+export type IntentLabel = 'MRO' | 'ES'; // | 'QoS' | 'TS'; // QoS and TS not supported yet
 export type ExecutionStatus = 'sent' | 'ack' | 'applied' | 'failed' | 'rollback';
 
 export interface OverviewData {
@@ -97,7 +97,7 @@ export interface PlannerAction {
 export interface PlannerOutput {
   planId: string;
   intentId: string;
-  useCase: 'ES' | 'MRO' | 'TS' | 'QoS';
+  useCase: 'ES' | 'MRO'; // | 'TS' | 'QoS'; // QoS and TS not supported yet
   candidateActions: PlannerAction[];
   constraints: {
     name: string;
