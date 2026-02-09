@@ -12,7 +12,6 @@ from contextlib import asynccontextmanager
 import logging
 
 from model_service import get_model_service, PredictionResult
-from new_endpoint import router as historical_kpi_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -48,9 +47,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Include routers
-app.include_router(historical_kpi_router)
 
 # Pydantic models for request/response
 class PredictionRequest(BaseModel):

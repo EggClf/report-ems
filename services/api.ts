@@ -108,7 +108,7 @@ export interface KPIDelta {
  */
 export const fetchHistoricalKPI = async (request: HistoricalKPIRequest): Promise<HistoricalKPIResponse> => {
     try {
-        const response = await fetch('/historical-kpi/extract', {
+        const response = await fetch('http://172.16.28.63:8000/historical-kpi/extract', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
