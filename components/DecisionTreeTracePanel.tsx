@@ -1,5 +1,5 @@
-import React from 'react';
-import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb } from 'lucide-react';
+import React, { useState } from 'react';
+import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb, GitBranch, TrendingDown, TrendingUp } from 'lucide-react';
 import { DecisionTreeTrace } from '../types-v2';
 
 interface DecisionTreeTracePanelProps {
@@ -286,7 +286,7 @@ function determineQualitativeLevel(
   // Parse condition to understand directionality
   const isLessThanOrEqual = condition.includes('<=') || condition.includes('<');
   const isGreaterThan = condition.includes('>');
-  
+
   // For features where high values support the action (most cases)
   if (isGreaterThan) {
     if (passed) return 'high';  // Value > threshold, so it's high
@@ -294,7 +294,7 @@ function determineQualitativeLevel(
     const ratio = featureValue / threshold;
     return ratio > 0.7 ? 'medium' : 'low';
   }
-  
+
   // For features where low values support the action (volatility, risk indices)
   if (isLessThanOrEqual) {
     if (passed) return 'low';   // Value <= threshold, so it's low
@@ -302,7 +302,7 @@ function determineQualitativeLevel(
     const ratio = featureValue / threshold;
     return ratio < 1.5 ? 'medium' : 'high';
   }
-  
+
   // Default fallback based on threshold relationship
   const ratio = featureValue / threshold;
   if (ratio >= 1.2) return 'high';
@@ -317,6 +317,8 @@ function getFeatureContext(featureName: string, intentLabel: string): FeatureCon
 }
 
 export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
+  const [activeTab, setActiveTab] = useState<'explanation' | 'details'>('explanation');
+
   const leafNode = trace.path.find((node) => node.featureName === 'LEAF');
   const leafDecision = leafNode
     ? /=(\s*)true/i.test(leafNode.condition)
@@ -361,7 +363,41 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
         Decision Explanation: Why {finalActionLabel}?
       </h2>
 
-      <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-600 rounded">
+      {/* Tab Navigation */}
+      <div className="border-b border-slate-200 mb-6">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setActiveTab('explanation')}
+            className={`px-6 py-3 font-semibold text-sm transition-colors relative ${
+              activeTab === 'explanation'
+                ? 'text-indigo-700 border-b-2 border-indigo-600'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Lightbulb className="w-4 h-4" />
+              Explanation
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('details')}
+            className={`px-6 py-3 font-semibold text-sm transition-colors relative ${
+              activeTab === 'details'
+                ? 'text-indigo-700 border-b-2 border-indigo-600'
+                : 'text-slate-600 hover:text-slate-800'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <GitBranch className="w-4 h-4" />
+              Details
+            </span>
+          </button>
+        </div>
+      </div>
+
+      {activeTab === 'explanation' ? (
+        <>
+          <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-indigo-600 rounded">
         <div className="flex items-center gap-3 mb-2">
           {finalDecision ? (
             <CheckCircle className="w-8 h-8 text-green-600" />
@@ -433,8 +469,8 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
                           <AlertTriangle className="w-5 h-5 text-orange-700" />
                         )}
                         <span className="font-semibold text-sm">
-                          {narrative.passed 
-                            ? `✓ This factor supports the decision` 
+                          {narrative.passed
+                            ? `✓ This factor supports the decision`
                             : `⚠ This factor opposes or blocks the decision`}
                         </span>
                       </div>
@@ -468,6 +504,164 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
           </p>
         </div>
       </div>
+        </>
+      ) : (
+        /* Details Tab - Tree Visualization */
+        <div className="space-y-6">
+          <div className="mb-4 p-4 bg-indigo-50 border-l-4 border-indigo-600 rounded">
+            <div className="flex items-center gap-3 mb-2">
+              {finalDecision ? (
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              ) : (
+                <XCircle className="w-8 h-8 text-red-600" />
+              )}
+              <div>
+                <div className="text-sm text-slate-600 font-medium">Final Decision</div>
+                <div className="text-2xl font-bold text-indigo-700">{finalActionLabel}</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-lg p-6 overflow-x-auto">
+            <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+              <GitBranch className="w-5 h-5 text-indigo-600" />
+              Decision Tree Visualization
+            </h3>
+
+            {/* Tree Visualization */}
+            <div className="flex justify-center py-8">
+              {renderTreeNode(trace.path, 0, finalDecision)}
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-300 rounded">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <div className="text-sm">
+                <div className="font-semibold text-green-900">Condition Met</div>
+                <div className="text-green-700">Branch taken</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-300 rounded">
+              <XCircle className="w-5 h-5 text-red-600" />
+              <div className="text-sm">
+                <div className="font-semibold text-red-900">Condition Not Met</div>
+                <div className="text-red-700">Branch not taken</div>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 p-3 bg-blue-50 border border-blue-300 rounded">
+              <GitBranch className="w-5 h-5 text-blue-600" />
+              <div className="text-sm">
+                <div className="font-semibold text-blue-900">Leaf Node</div>
+                <div className="text-blue-700">Final decision</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+// Recursive function to render scikit-learn-style tree nodes
+function renderTreeNode(path: DecisionTreeTrace['path'], index: number, finalDecision?: boolean): React.ReactNode {
+  if (index >= path.length) return null;
+
+  const node = path[index];
+  const isLeaf = node.featureName === 'LEAF';
+  const nextNode = index + 1 < path.length ? path[index + 1] : null;
+
+  if (isLeaf) {
+    return (
+      <div className="flex flex-col items-center">
+        <div className={`px-6 py-4 rounded-lg border-2 shadow-lg ${
+          finalDecision
+            ? 'bg-green-100 border-green-500'
+            : 'bg-red-100 border-red-500'
+        }`}>
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {finalDecision ? (
+                <CheckCircle className="w-6 h-6 text-green-700" />
+              ) : (
+                <XCircle className="w-6 h-6 text-red-700" />
+              )}
+              <div className="font-bold text-lg">Leaf Node</div>
+            </div>
+            <div className={`text-sm font-semibold ${finalDecision ? 'text-green-800' : 'text-red-800'}`}>
+              {node.condition}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col items-center">
+      {/* Current Node */}
+      <div className={`px-6 py-4 rounded-lg border-2 shadow-md min-w-[280px] ${
+        node.passed
+          ? 'bg-white border-green-400'
+          : 'bg-white border-slate-300 opacity-60'
+      }`}>
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 mb-2">
+            {node.passed ? (
+              <CheckCircle className="w-5 h-5 text-green-600" />
+            ) : (
+              <div className="w-5 h-5 rounded-full border-2 border-slate-400" />
+            )}
+            <span className="text-xs font-semibold text-slate-600">Node {node.nodeId}</span>
+          </div>
+
+          <div className="font-bold text-sm text-slate-800 break-words">
+            {node.featureName}
+          </div>
+
+          <div className="text-xs text-slate-700 bg-slate-100 rounded px-2 py-1">
+            {node.condition}
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-200">
+            <div>
+              <div className="text-slate-600">Threshold</div>
+              <div className="font-semibold text-slate-800">{node.threshold.toFixed(3)}</div>
+            </div>
+            <div>
+              <div className="text-slate-600">Value</div>
+              <div className="font-semibold text-slate-800">{node.featureValue.toFixed(3)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Arrow and Next Node */}
+      {nextNode && (
+        <div className="flex flex-col items-center">
+          <div className={`w-0.5 h-12 ${node.passed ? 'bg-green-500' : 'bg-slate-300'}`} />
+          <div className={`px-3 py-1 rounded text-xs font-semibold ${
+            node.passed
+              ? 'bg-green-500 text-white'
+              : 'bg-slate-300 text-slate-600'
+          }`}>
+            {node.passed ? (
+              <span className="flex items-center gap-1">
+                <TrendingDown className="w-3 h-3" />
+                True
+              </span>
+            ) : (
+              <span className="flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                False
+              </span>
+            )}
+          </div>
+          <div className={`w-0.5 h-12 ${node.passed ? 'bg-green-500' : 'bg-slate-300'}`} />
+          {renderTreeNode(path, index + 1, finalDecision)}
+        </div>
+      )}
+    </div>
+  );
+}
