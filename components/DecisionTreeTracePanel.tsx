@@ -319,25 +319,23 @@ function getFeatureContext(featureName: string, intentLabel: string): FeatureCon
 // Convert feature name to question format
 function featureToQuestion(featureName: string): string {
   const questionMap: Record<string, string> = {
-    'Persistent Low Load': 'Is traffic consistently low?',
-    'Energy Inefficiency': 'Is energy being wasted?',
-    'QoS Stability': 'Is service quality stable?',
-    'Mobility Safety': 'Is handover performance safe?',
-    'Social Event Risk': 'Is there a large event nearby?',
-    'Traffic Stability': 'Is traffic behavior predictable?',
-    'Weather Impact': 'Is weather favorable?',
-    'Neighbor Dependency': 'Is this cell critical to neighbors?',
-    'ES Opportunity': 'Should we apply energy saving?',
-    'HO Failure Pressure': 'Are handover failures high?',
-    'HO Stability': 'Is handover success stable?',
-    'Congestion-Induced HO Risk': 'Are handovers failing due to congestion?',
-    'Post-HO QoE Degradation': 'Does quality degrade after handover?',
-    'Mobility Volatility': 'Is mobility behavior erratic?',
-    'Weather-Driven Mobility Risk': 'Is weather affecting mobility?',
-    'MRO Necessity': 'Should we optimize mobility?',
+    'Persistent Low Load Score': 'Is the cell persistently under low load?',
+    'Energy Inefficiency Score': 'Is energy usage inefficient relative to traffic?',
+    'Stable QoS Confidence': 'Is there a risk of unstable QoS?',
+    'Mobility Safety Index': 'Is there a risk to mobility safety?',
+    'Social Event': 'Is there a high-impact social event nearby?',
+    'Traffic Volatility Index': 'Is traffic instability detected?',
+    'Weather Sensitivity Score': 'Is weather posing a risk to operation?',
+    'Neighbor Dependency Score': 'Is this cell critical to neighbor mobility?',
+    'Handover Failure Pressure': 'Is handover failure pressure high?',
+    'Handover Success Stability': 'Is handover stability degraded?',
+    'Congestion-Induced HO Risk': 'Is congestion causing handover failures?',
+    'Post-HO QoE Degradation': 'Is user experience degraded after handover?',
+    'Mobility Volatility Index': 'Is mobility behavior unstable?',
+    'Weather-Driven Mobility Risk': 'Is weather increasing mobility risk?',
   };
 
-  return questionMap[featureName] || `${featureName}?`;
+  return questionMap[featureName] ?? featureName;
 }
 
 // Check if impact contains "neutral"
