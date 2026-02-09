@@ -106,7 +106,6 @@ class NetworkScanAPI {
       console.log(`ES features for ${cell.cellname}: valid_features=${Object.values(features).filter(v => v !== 0).length}/${esFeatureNames.length}`);
 
     } else {
-    } else {
       // MRO model features
       const mroFeatureNames = [
         'Handover Failure Pressure',
