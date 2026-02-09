@@ -164,6 +164,22 @@ const ES_CONTEXTS: Record<string, FeatureContext> = {
       low: 'Do not apply ES'
     },
     role: 'Final decision or label'
+  },
+  n_alarm: {
+    name: 'Alarm Count',
+    intent: 'Detect operational issues or network instability',
+    interpretation: {
+      low: 'No or minimal alarms',
+      medium: 'Some alarms present',
+      high: 'High number of active alarms'
+    },
+    decisionImpact: {
+      low: 'Supports ES',
+      medium: 'ES with caution',
+      high: 'ES forbidden'
+    },
+    role: 'Operational health indicator',
+    isHardBlock: true
   }
 };
 
@@ -328,6 +344,7 @@ function featureToQuestion(featureName: string): string {
     'Traffic Stability': 'Is traffic instability detected?',
     'Weather Impact': 'Is weather posing a risk to operation?',
     'Neighbor Dependency': 'Is this cell critical to neighbor mobility?',
+    'Alarm Count': 'Are there active alarms indicating operational issues?',
     // MRO-related features
     'HO Failure Pressure': 'Is handover failure pressure high?',
     'HO Stability': 'Is handover stability degraded?',
@@ -369,11 +386,16 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
     .filter(node => node.featureName !== 'LEAF')
     .map((node, idx) => {
       const context = getFeatureContext(node.featureName, trace.intentLabel);
-      if (!context) return null;
+      if (!context) {
+        console.warn(`No context found for feature: "${node.featureName}". Normalized: "${node.featureName.toLowerCase().replace(/[_\s-]/g, '_')}"`);
+        return null;
+      }
 
       const level = determineQualitativeLevel(node.featureValue, node.threshold, node.passed, node.condition);
       const interpretation = context.interpretation[level];
       const impact = context.decisionImpact[level];
+
+      console.log(`Feature: ${node.featureName}, Level: ${level}, Impact: ${impact}, Passed: ${node.passed}`);
 
       return {
         stepNumber: idx + 1,

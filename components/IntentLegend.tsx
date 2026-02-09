@@ -3,26 +3,26 @@ import { Info } from 'lucide-react';
 
 export const IntentLegend: React.FC = () => {
   const intents = [
-    { 
-      label: 'MRO', 
+    {
+      label: 'MRO',
       name: 'Mobility Robustness Optimization',
       description: 'Optimizes handover parameters to reduce failures and improve mobility performance',
       color: 'bg-purple-100 text-purple-700 border-purple-300'
     },
-    { 
-      label: 'ES', 
+    {
+      label: 'ES',
       name: 'Energy Saving',
       description: 'Identifies opportunities to reduce power consumption while maintaining QoS',
       color: 'bg-green-100 text-green-700 border-green-300'
     }
-    // { 
-    //   label: 'QoS', 
+    // {
+    //   label: 'QoS',
     //   name: 'Quality of Service',
     //   description: 'Ensures service level agreements and 5QI requirements are met',
     //   color: 'bg-orange-100 text-orange-700 border-orange-300'
     // },
-    // { 
-    //   label: 'TS', 
+    // {
+    //   label: 'TS',
     //   name: 'Traffic Steering',
     //   description: 'Balances load across cells and optimize inter-frequency resource allocation',
     //   color: 'bg-blue-100 text-blue-700 border-blue-300'
