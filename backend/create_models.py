@@ -19,7 +19,6 @@ def create_es_model(csv_path: str = 'data/dataset_es.csv'):
 
     # Feature names for ES
     feature_names = [
-        'confidence',
         'Persistent Low Load Score',
         'Energy Inefficiency Score',
         'Stable QoS Confidence',
@@ -113,7 +112,6 @@ def create_mro_model(csv_path: str = '../data/dataset_mro.csv'):
 
     # Feature names for MRO
     feature_names = [
-        'confidence',
         'Handover Failure Pressure',
         'Handover Success Stability',
         'Congestion-Induced HO Risk',
@@ -220,7 +218,6 @@ def test_models():
 
     # Create a test sample
     test_es = pd.DataFrame({
-        'confidence': [0.8],
         'Persistent Low Load Score': [0.7],
         'Energy Inefficiency Score': [0.75],
         'Stable QoS Confidence': [0.9],
@@ -253,7 +250,6 @@ def test_models():
 
     # Create a test sample
     test_mro = pd.DataFrame({
-        'confidence': [0.8],
         'Handover Failure Pressure': [0.7],
         'Handover Success Stability': [0.3],
         'Congestion-Induced HO Risk': [0.6],

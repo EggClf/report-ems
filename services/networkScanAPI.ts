@@ -1,11 +1,6 @@
 /**
  * Network Scan API Service
  * Fetches cell data from the network scan endpoint
- *
- * TEMPORARY WORKAROUND:
- * - The network scan API doesn't provide 'confidence' field
- * - We calculate it based on data completeness (see calculateConfidence method)
- * - See WORKAROUNDS.md for details and removal instructions
  */
 
 const NETWORK_SCAN_URL = import.meta.env.VITE_NETWORK_SCAN_URL || 'http://172.16.28.63:8000/network-scan/scan';
@@ -80,33 +75,7 @@ class NetworkScanAPI {
   }
 
   /**
-   * Calculate confidence score based on data completeness
-   * Temporary workaround since network scan API doesn't return confidence
-   */
-  private calculateConfidence(cell: CellFeatures, featureNames: string[]): number {
-    // Count how many features have valid values
-    let validFeatures = 0;
-    let totalFeatures = 0;
-
-    featureNames.forEach(name => {
-      if (name === 'confidence' || name === 'n_alarm') return; // Skip these
-      totalFeatures++;
-      const value = (cell as any)[name];
-      if (value !== null && value !== undefined) {
-        validFeatures++;
-      }
-    });
-
-    // Calculate confidence as percentage of valid features
-    // Range: 0.7 to 0.95 based on completeness
-    const completeness = totalFeatures > 0 ? validFeatures / totalFeatures : 0.5;
-    const confidence = 0.7 + (completeness * 0.25);
-
-    return Math.min(0.95, Math.max(0.7, confidence));
-  }
-
-  /**
-   * Extract ML features from cell data for a specific model type
+   * Merge MRO and ES features for a cell
    */
   extractMLFeatures(cell: CellFeatures, modelType: 'ES' | 'MRO'): Record<string, number> {
     const features: Record<string, number> = {};
@@ -114,7 +83,6 @@ class NetworkScanAPI {
     if (modelType === 'ES') {
       // ES model features
       const esFeatureNames = [
-        'confidence',
         'Persistent Low Load Score',
         'Energy Inefficiency Score',
         'Stable QoS Confidence',
@@ -125,13 +93,8 @@ class NetworkScanAPI {
         'n_alarm',
       ];
 
-      // Calculate confidence based on data completeness
-      const confidence = this.calculateConfidence(cell, esFeatureNames);
-
       esFeatureNames.forEach(name => {
-        if (name === 'confidence') {
-          features[name] = confidence;
-        } else if (name === 'n_alarm') {
+        if (name === 'n_alarm') {
           features[name] = cell.n_alarm ?? 0;
         } else {
           const value = (cell as any)[name];
@@ -140,12 +103,12 @@ class NetworkScanAPI {
         }
       });
 
-      console.log(`ES features for ${cell.cellname}: confidence=${confidence.toFixed(3)}, valid_features=${Object.values(features).filter(v => v !== 0).length}/${esFeatureNames.length}`);
+      console.log(`ES features for ${cell.cellname}: valid_features=${Object.values(features).filter(v => v !== 0).length}/${esFeatureNames.length}`);
 
+    } else {
     } else {
       // MRO model features
       const mroFeatureNames = [
-        'confidence',
         'Handover Failure Pressure',
         'Handover Success Stability',
         'Congestion-Induced HO Risk',
@@ -155,13 +118,8 @@ class NetworkScanAPI {
         'Social Event Score',
       ];
 
-      // Calculate confidence based on data completeness
-      const confidence = this.calculateConfidence(cell, mroFeatureNames);
-
       mroFeatureNames.forEach(name => {
-        if (name === 'confidence') {
-          features[name] = confidence;
-        } else if (name === 'n_alarm') {
+        if (name === 'n_alarm') {
           features[name] = cell.n_alarm ?? 0;
         } else {
           const value = (cell as any)[name];
@@ -170,7 +128,7 @@ class NetworkScanAPI {
         }
       });
 
-      console.log(`MRO features for ${cell.cellname}: confidence=${confidence.toFixed(3)}, valid_features=${Object.values(features).filter(v => v !== 0).length}/${mroFeatureNames.length}`);
+      console.log(`MRO features for ${cell.cellname}: valid_features=${Object.values(features).filter(v => v !== 0).length}/${mroFeatureNames.length}`);
     }
 
     return features;

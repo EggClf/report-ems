@@ -30,7 +30,6 @@ def test_es_prediction():
     payload = {
         "model_type": "ES",
         "features": {
-            "confidence": 0.8,
             "Persistent Low Load Score": 0.7,
             "Energy Inefficiency Score": 0.75,
             "Stable QoS Confidence": 0.9,
@@ -62,7 +61,6 @@ def test_mro_prediction():
     payload = {
         "model_type": "MRO",
         "features": {
-            "confidence": 0.8,
             "Handover Failure Pressure": 0.7,
             "Handover Success Stability": 0.3,
             "Congestion-Induced HO Risk": 0.6,
@@ -93,7 +91,6 @@ def test_es_prediction_with_trace():
     payload = {
         "model_type": "ES",
         "features": {
-            "confidence": 0.85,
             "Persistent Low Load Score": 0.6,
             "Energy Inefficiency Score": 0.7,
             "Stable QoS Confidence": 0.88,
@@ -169,7 +166,6 @@ def test_batch_prediction():
         {
             "model_type": "ES",
             "features": {
-                "confidence": 0.8,
                 "Persistent Low Load Score": 0.5,
                 "Energy Inefficiency Score": 0.3,
                 "Stable QoS Confidence": 0.9,
@@ -184,7 +180,6 @@ def test_batch_prediction():
         {
             "model_type": "MRO",
             "features": {
-                "confidence": 0.75,
                 "Handover Failure Pressure": 0.8,
                 "Handover Success Stability": 0.2,
                 "Congestion-Induced HO Risk": 0.7,

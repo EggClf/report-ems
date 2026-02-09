@@ -202,7 +202,6 @@ export const mlModelAPI = new MLModelAPI();
 export const generateSampleFeatures = (modelType: 'ES' | 'MRO'): Record<string, number> => {
   if (modelType === 'ES') {
     return {
-      'confidence': Math.random() * 0.3 + 0.7, // 0.7-1.0
       'Persistent Low Load Score': Math.random(),
       'Energy Inefficiency Score': Math.random(),
       'Stable QoS Confidence': Math.random() * 0.3 + 0.7,
@@ -214,7 +213,6 @@ export const generateSampleFeatures = (modelType: 'ES' | 'MRO'): Record<string, 
     };
   } else {
     return {
-      'confidence': Math.random() * 0.3 + 0.7, // 0.7-1.0
       'Handover Failure Pressure': Math.random(),
       'Handover Success Stability': Math.random(),
       'Congestion-Induced HO Risk': Math.random(),
