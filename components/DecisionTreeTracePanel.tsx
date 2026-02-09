@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb, GitBranch, TrendingDown, TrendingUp } from 'lucide-react';
+import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb, GitBranch, TrendingDown, TrendingUp, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { DecisionTreeTrace } from '../types-v2';
 
 interface DecisionTreeTracePanelProps {
@@ -316,8 +316,38 @@ function getFeatureContext(featureName: string, intentLabel: string): FeatureCon
   return contextDb[normalizedName] || null;
 }
 
+// Convert feature name to question format
+function featureToQuestion(featureName: string): string {
+  const questionMap: Record<string, string> = {
+    'Persistent Low Load': 'Is traffic consistently low?',
+    'Energy Inefficiency': 'Is energy being wasted?',
+    'QoS Stability': 'Is service quality stable?',
+    'Mobility Safety': 'Is handover performance safe?',
+    'Social Event Risk': 'Is there a large event nearby?',
+    'Traffic Stability': 'Is traffic behavior predictable?',
+    'Weather Impact': 'Is weather favorable?',
+    'Neighbor Dependency': 'Is this cell critical to neighbors?',
+    'ES Opportunity': 'Should we apply energy saving?',
+    'HO Failure Pressure': 'Are handover failures high?',
+    'HO Stability': 'Is handover success stable?',
+    'Congestion-Induced HO Risk': 'Are handovers failing due to congestion?',
+    'Post-HO QoE Degradation': 'Does quality degrade after handover?',
+    'Mobility Volatility': 'Is mobility behavior erratic?',
+    'Weather-Driven Mobility Risk': 'Is weather affecting mobility?',
+    'MRO Necessity': 'Should we optimize mobility?',
+  };
+
+  return questionMap[featureName] || `${featureName}?`;
+}
+
+// Check if impact contains "neutral"
+function isNeutralImpact(impact: string): boolean {
+  return impact.toLowerCase().includes('neutral');
+}
+
 export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
   const [activeTab, setActiveTab] = useState<'explanation' | 'details'>('explanation');
+  const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
 
   const leafNode = trace.path.find((node) => node.featureName === 'LEAF');
   const leafDecision = leafNode
@@ -355,6 +385,23 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
       };
     })
     .filter(Boolean);
+
+  // Filter to show only non-neutral impacts
+  const impactfulNarratives = narratives.filter((narrative: any) =>
+    !isNeutralImpact(narrative.impact)
+  );
+
+  const toggleNodeExpansion = (stepNumber: number) => {
+    setExpandedNodes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(stepNumber)) {
+        newSet.delete(stepNumber);
+      } else {
+        newSet.add(stepNumber);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
@@ -410,7 +457,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
           </div>
         </div>
         <div className="text-sm text-slate-700 mt-2">
-          The decision tree analyzed <strong>{narratives.length} key factors</strong> from the network context to reach this conclusion.
+          The decision tree analyzed <strong>{impactfulNarratives.length} key factors</strong> with significant impact to reach this conclusion.
         </div>
       </div>
 
@@ -418,64 +465,98 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
           <Lightbulb className="w-5 h-5 text-amber-500" />
-          Step-by-Step Decision Logic
+          Key Decision Factors
         </h3>
 
-        {narratives.map((narrative: any, idx) => {
+        {impactfulNarratives.map((narrative: any, idx) => {
           const isHardBlock = narrative.context.isHardBlock;
+          const isExpanded = expandedNodes.has(narrative.stepNumber);
+          const question = featureToQuestion(narrative.context.name);
+          const combinedAnswer = `${narrative.interpretation}. ${narrative.impact}.`;
+
           const borderColor = isHardBlock ? 'border-red-500' : 'border-indigo-300';
           const bgColor = isHardBlock ? 'bg-red-50' : 'bg-slate-50';
 
           return (
-            <div key={idx} className={`border-l-4 ${borderColor} ${bgColor} rounded-r-lg p-4`}>
+            <div key={narrative.stepNumber} className={`border-l-4 ${borderColor} ${bgColor} rounded-r-lg p-4`}>
               <div className="flex items-start gap-3">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-sm">
-                  {narrative.stepNumber}
+                  {idx + 1}
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <h4 className="text-lg font-bold text-slate-800">{narrative.context.name}</h4>
-                    {isHardBlock && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-xs font-semibold rounded">
-                        <Shield className="w-3 h-3" />
-                        SAFETY CRITICAL
-                      </span>
-                    )}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2 flex-1">
+                      <h4 className="text-lg font-bold text-slate-800">{question}</h4>
+                      {isHardBlock && (
+                        <span className="flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-xs font-semibold rounded">
+                          <Shield className="w-3 h-3" />
+                          CRITICAL
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => toggleNodeExpansion(narrative.stepNumber)}
+                      className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors"
+                      aria-label="Toggle details"
+                    >
+                      <Info className="w-4 h-4" />
+                      {isExpanded ? (
+                        <ChevronDown className="w-4 h-4" />
+                      ) : (
+                        <ChevronRight className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
 
-                  <div className="space-y-3 text-sm">
+                  {/* Combined Answer */}
+                  <div className={`p-3 rounded-lg mb-3 ${
+                    narrative.passed
+                      ? 'bg-green-100 border border-green-300'
+                      : 'bg-orange-100 border border-orange-300'
+                  }`}>
                     <div className="flex items-start gap-2">
-                      <span className="font-semibold text-slate-700 min-w-[80px]">Purpose:</span>
-                      <span className="text-slate-600">{narrative.context.intent}</span>
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <span className="font-semibold text-slate-700 min-w-[80px]">Observation:</span>
-                      <span className="text-slate-800 font-medium">{narrative.interpretation}</span>
-                    </div>
-
-                    <div className="flex items-start gap-2">
-                      <span className="font-semibold text-slate-700 min-w-[80px]">Impact:</span>
-                      <span className={`font-semibold ${narrative.passed ? 'text-green-700' : 'text-red-700'}`}>
-                        {narrative.impact}
-                      </span>
-                    </div>
-
-                    <div className={`mt-3 p-3 rounded-lg ${narrative.passed ? 'bg-green-100 border border-green-300' : 'bg-orange-100 border border-orange-300'}`}>
-                      <div className="flex items-center gap-2">
-                        {narrative.passed ? (
-                          <CheckCircle className="w-5 h-5 text-green-700" />
-                        ) : (
-                          <AlertTriangle className="w-5 h-5 text-orange-700" />
-                        )}
-                        <span className="font-semibold text-sm">
-                          {narrative.passed
-                            ? `✓ This factor supports the decision`
-                            : `⚠ This factor opposes or blocks the decision`}
-                        </span>
+                      {narrative.passed ? (
+                        <CheckCircle className="w-5 h-5 text-green-700 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <AlertTriangle className="w-5 h-5 text-orange-700 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <div className="font-semibold text-sm mb-1">
+                          {narrative.passed ? 'Yes' : 'No'}
+                        </div>
+                        <div className="text-sm text-slate-700">
+                          {combinedAnswer}
+                        </div>
                       </div>
                     </div>
                   </div>
+
+                  {/* Expandable Details */}
+                  {isExpanded && (
+                    <div className="space-y-2 text-sm pl-4 border-l-2 border-slate-300 ml-2">
+                      <div className="flex items-start gap-2">
+                        <span className="font-semibold text-slate-700 min-w-[90px]">Purpose:</span>
+                        <span className="text-slate-600">{narrative.context.intent}</span>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="font-semibold text-slate-700 min-w-[90px]">Observation:</span>
+                        <span className="text-slate-800">{narrative.interpretation}</span>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="font-semibold text-slate-700 min-w-[90px]">Impact:</span>
+                        <span className={`font-semibold ${narrative.passed ? 'text-green-700' : 'text-red-700'}`}>
+                          {narrative.impact}
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-2">
+                        <span className="font-semibold text-slate-700 min-w-[90px]">Role:</span>
+                        <span className="text-slate-600">{narrative.context.role}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -488,18 +569,17 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
         <h4 className="font-bold text-slate-800 mb-2">📖 How to Interpret This Decision</h4>
         <div className="text-sm text-slate-700 space-y-2">
           <p>
-            Each step above represents a <strong>factor</strong> the AI model considered when making this decision.
-            The factors are evaluated in sequence, building up to the final recommendation.
+            Each factor above represents a <strong>key question</strong> the AI model considered when making this decision.
+            Only factors with significant impact (non-neutral) are shown for clarity.
           </p>
           <p>
-            <strong className="text-indigo-700">Purpose</strong> explains what the factor measures.{' '}
-            <strong className="text-indigo-700">Observation</strong> describes what was detected in the current network state.{' '}
-            <strong className="text-indigo-700">Impact</strong> shows how this factor influences the decision.
+            The <strong>combined answer</strong> includes both what was observed and its impact on the decision.
+            Click the <Info className="w-3 h-3 inline mx-1" /> icon to see detailed analysis including purpose, detailed observation, and impact breakdown.
           </p>
           <p>
             Factors marked <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-600 text-white text-xs font-semibold rounded">
               <Shield className="w-3 h-3" />
-              SAFETY CRITICAL
+              CRITICAL
             </span> are hard constraints that can block actions to protect network quality and user experience.
           </p>
         </div>
