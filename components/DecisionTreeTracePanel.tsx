@@ -319,19 +319,21 @@ function getFeatureContext(featureName: string, intentLabel: string): FeatureCon
 // Convert feature name to question format
 function featureToQuestion(featureName: string): string {
   const questionMap: Record<string, string> = {
-    'Persistent Low Load Score': 'Is the cell persistently under low load?',
-    'Energy Inefficiency Score': 'Is energy usage inefficient relative to traffic?',
-    'Stable QoS Confidence': 'Is there a risk of unstable QoS?',
-    'Mobility Safety Index': 'Is there a risk to mobility safety?',
-    'Social Event': 'Is there a high-impact social event nearby?',
-    'Traffic Volatility Index': 'Is traffic instability detected?',
-    'Weather Sensitivity Score': 'Is weather posing a risk to operation?',
-    'Neighbor Dependency Score': 'Is this cell critical to neighbor mobility?',
-    'Handover Failure Pressure': 'Is handover failure pressure high?',
-    'Handover Success Stability': 'Is handover stability degraded?',
+    // ES-related features
+    'Persistent Low Load': 'Is the cell persistently under low load?',
+    'Energy Inefficiency': 'Is energy usage inefficient relative to traffic?',
+    'QoS Stability': 'Is there a risk of unstable QoS?',
+    'Mobility Safety': 'Is there a risk to mobility safety?',
+    'Social Event Risk': 'Is there a high-impact social event nearby?',
+    'Traffic Stability': 'Is traffic instability detected?',
+    'Weather Impact': 'Is weather posing a risk to operation?',
+    'Neighbor Dependency': 'Is this cell critical to neighbor mobility?',
+    // MRO-related features
+    'HO Failure Pressure': 'Is handover failure pressure high?',
+    'HO Stability': 'Is handover stability degraded?',
     'Congestion-Induced HO Risk': 'Is congestion causing handover failures?',
     'Post-HO QoE Degradation': 'Is user experience degraded after handover?',
-    'Mobility Volatility Index': 'Is mobility behavior unstable?',
+    'Mobility Volatility': 'Is mobility behavior unstable?',
     'Weather-Driven Mobility Risk': 'Is weather increasing mobility risk?',
   };
 
