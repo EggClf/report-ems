@@ -105,7 +105,9 @@ export const LoopMonitoringDashboard: React.FC = () => {
   };
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value + 'T00:00:00');
+    // Parse date string to avoid timezone issues
+    const [year, month, day] = e.target.value.split('-').map(Number);
+    const newDate = new Date(year, month - 1, day);
     setSelectedDate(newDate);
     setLastUpdate(new Date());
   };

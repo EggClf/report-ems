@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Activity, 
-  MapPin, 
-  Brain, 
-  GitBranch, 
-  Cpu, 
-  Play, 
+import {
+  Activity,
+  MapPin,
+  Brain,
+  GitBranch,
+  Cpu,
+  Play,
   ChevronRight,
   Menu,
   X,
@@ -27,7 +27,7 @@ const sections = [
   { id: 'overview', label: 'Loop Status', icon: Activity },
   { id: 'legend', label: 'Intent Guide', icon: Brain },
   { id: 'hotspots', label: 'Hotspots', icon: MapPin },
-  { id: 'intents', label: 'Intent Engine', icon: Brain },
+  { id: 'intents', label: 'Network Cell', icon: Brain },
   { id: 'decision-trace', label: 'Decision Tree', icon: GitBranch },
   { id: 'planner', label: 'Action Planner', icon: Cpu },
   { id: 'execution', label: 'Execution', icon: Play }
@@ -69,7 +69,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <>
       {/* Sidebar - Hidden on mobile by default */}
-      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r border-slate-200 shadow-lg transition-all duration-300 z-40 
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white border-r border-slate-200 shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
       `}>
@@ -87,23 +87,23 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {isExpanded && (
             <div className="mb-4 pb-4 border-b border-slate-200">
               <div className="text-xs font-semibold text-slate-600 uppercase mb-3">System Status</div>
-              
+
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">Loop</span>
                   <div className={`w-2 h-2 rounded-full ${getStatusColor()} animate-pulse`}></div>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">Alerts</span>
                   <span className="text-xs font-bold text-red-600">{alertCount}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">Intents</span>
                   <span className="text-xs font-bold text-indigo-600">{intentCount}</span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">Hotspots</span>
                   <span className="text-xs font-bold text-orange-600">{hotspotCount}</span>
@@ -118,7 +118,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
               {sections.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
-                
+
                 return (
                   <button
                     key={section.id}
