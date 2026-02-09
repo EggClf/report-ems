@@ -17,7 +17,8 @@ import {
 } from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
-import { Hotspot } from '../types-v2';
+import { calculateKPIDeltas } from '../services/api';
+import { Hotspot, ExecutionOutcome, ExecutionStatus } from '../types-v2';
 import { DecisionTreeTrace } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
@@ -116,7 +117,89 @@ export const LoopMonitoringDashboard: React.FC = () => {
     // Navigate to cells section when hotspot clicked
     handleNavigate('cells');
   };
+  /**
+   * Build ExecutionOutcome with real KPI data from backend
+   */
+  const buildExecutionOutcome = async (
+    planId: string,
+    intentId: string,
+    cellname: string,
+    taskType: 'MRO' | 'ES'
+  ): Promise<ExecutionOutcome> => {
+    const executionTime = new Date();
+    const executionId = `exec_${Date.now()}`;
 
+    // Fetch real KPI deltas from backend
+    let kpiDeltas = [];
+    try {
+      kpiDeltas = await calculateKPIDeltas(
+        executionTime.toISOString(),
+        [cellname],
+        taskType,
+        2, // 2 hours before
+        2  // 2 hours after
+      );
+    } catch (error) {
+      console.error('Failed to calculate KPI deltas:', error);
+      // Fallback to mock if API fails
+      return getMockExecutionOutcome(planId, intentId);
+    }
+
+    // Calculate correlation score based on KPI improvements
+    const improvements = kpiDeltas.filter((kpi) => {
+      const isPositive = kpi.deltaPercent > 0;
+      // Define improvement criteria per metric
+      if (kpi.metric.includes('Throughput') || kpi.metric.includes('SR')) {
+        return isPositive; // Higher is better
+      } else if (kpi.metric.includes('CDR') || kpi.metric.includes('PRB') || kpi.metric.includes('Power')) {
+        return !isPositive; // Lower is better
+      }
+      return isPositive;
+    });
+
+    const correlationScore = kpiDeltas.length > 0 ? improvements.length / kpiDeltas.length : 0;
+
+    return {
+      executionId,
+      planId,
+      intentId,
+      logs: [
+        {
+          executionId,
+          planId,
+          intentId,
+          status: 'sent' as ExecutionStatus,
+          timestamp: new Date(executionTime.getTime()),
+          targetCell: cellname,
+        },
+        {
+          executionId,
+          planId,
+          intentId,
+          status: 'ack' as ExecutionStatus,
+          timestamp: new Date(executionTime.getTime() + 2000),
+          targetCell: cellname,
+        },
+        {
+          executionId,
+          planId,
+          intentId,
+          status: 'applied' as ExecutionStatus,
+          timestamp: new Date(executionTime.getTime() + 5000),
+          targetCell: cellname,
+        },
+      ],
+      kpiDeltas,
+      attribution: {
+        success: correlationScore > 0.6,
+        correlationScore,
+      },
+      rateLimiting: {
+        cooldownMinutes: 30,
+        actionsRemainingInWindow: 5,
+      },
+    };
+  };
 const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
     setSelectedCell(cell);
     setSelectedModelType(modelType);
@@ -137,10 +220,18 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
       setDecisionTrace(trace);
 
-      // Generate planner output and execution outcome (mock for now)
+      // Generate planner output
       const newPlannerOutput = getMockPlannerOutput(trace.intentId);
       setPlannerOutput(newPlannerOutput);
-      setExecutionOutcome(getMockExecutionOutcome(newPlannerOutput.planId, trace.intentId));
+
+      // Fetch execution outcome with real KPI data from backend
+      const outcome = await buildExecutionOutcome(
+        newPlannerOutput.planId,
+        trace.intentId,
+        cell.cellname,
+        modelType
+      );
+      setExecutionOutcome(outcome);
 
       console.log(`✓ ${modelType} prediction complete:`, trace.decision);
     } catch (error) {
