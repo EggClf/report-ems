@@ -144,7 +144,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {isExpanded && (
             <div className="pt-4 border-t border-slate-200">
               <div className="text-xs text-slate-500 text-center">
-                TaoQuan AI v2.0
+                VULCAN
               </div>
             </div>
           )}

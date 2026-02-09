@@ -267,10 +267,10 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">
-                TaoQuan AI <span className="text-indigo-400">Loop Monitoring</span>
+                VULCAN <span className="text-indigo-400">Loop Monitoring</span>
               </h1>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">
-                Real-time Automation Intelligence
+                Viettel Unified Logic and Control for Autonomous Network
               </p>
             </div>
           </div>
@@ -404,7 +404,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`}>
         <p className="text-xs">
-          TaoQuan AI Loop Monitoring System • Version 2.0 •
+          VULCAN - Viettel Unified Logic and Control for Autonomous Network
           {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
       </footer>

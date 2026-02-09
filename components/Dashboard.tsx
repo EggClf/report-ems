@@ -63,7 +63,7 @@ export const Dashboard: React.FC = () => {
     if (storedLastVisit) {
       setLastVisit(new Date(storedLastVisit));
     } else {
-      // First visit: set to now so nothing is "new", or null to show everything new? 
+      // First visit: set to now so nothing is "new", or null to show everything new?
       // Let's set to now-ish so strictly new things appear.
       setLastVisit(new Date());
     }
@@ -96,8 +96,8 @@ export const Dashboard: React.FC = () => {
               <Network className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">TaoQuan AI <span className="text-indigo-400">EMS</span></h1>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Intelligent Optimization</p>
+              <h1 className="text-lg font-bold tracking-tight">VULCAN<span className="text-indigo-400">EMS</span></h1>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wider">Viettel Unified Logic and Control for Autonomous Network</p>
             </div>
           </div>
 
