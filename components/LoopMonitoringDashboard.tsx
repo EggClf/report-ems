@@ -267,7 +267,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">
-                VULCAN <span className="text-indigo-400">Loop Monitoring</span>
+                VULCAN
               </h1>
               <p className="text-[10px] text-slate-400 uppercase tracking-wider">
                 Viettel Unified Logic and Control for Autonomous Network
