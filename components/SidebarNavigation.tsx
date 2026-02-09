@@ -27,7 +27,7 @@ const sections = [
   { id: 'overview', label: 'Loop Status', icon: Activity },
   { id: 'legend', label: 'Intent Guide', icon: Brain },
   { id: 'hotspots', label: 'Hotspots', icon: MapPin },
-  { id: 'intents', label: 'Network Cell', icon: Brain },
+  { id: 'cells', label: 'Network Cell', icon: Brain },
   { id: 'decision-trace', label: 'Decision Tree', icon: GitBranch },
   { id: 'planner', label: 'Action Planner', icon: Cpu },
   { id: 'execution', label: 'Execution', icon: Play }
