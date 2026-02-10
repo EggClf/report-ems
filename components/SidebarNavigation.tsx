@@ -9,11 +9,8 @@ import {
   ChevronRight,
   Menu,
   X,
-  ChevronUp,
-  Sun,
-  Moon
+  ChevronUp
 } from 'lucide-react';
-import { useTheme } from './ThemeContext';
 
 interface SidebarNavigationProps {
   activeSection: string;
@@ -47,7 +44,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onToggleExpanded
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
-  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -76,17 +72,15 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#f8f0ea] shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
-      `} style={{ backgroundColor: 'var(--sidebar-bg, #f8f0ea)', borderRightColor: 'var(--sidebar-border, #EA7B7B)', borderRightWidth: '2px' }}>
-        <style>{`.dark { --sidebar-bg: #5D0E41; --sidebar-border: #A0153E; }`}</style>
+      `} style={{ borderRightColor: '#EA7B7B', borderRightWidth: '2px' }}>
         {/* Toggle Button */}
         <button
           onClick={onToggleExpanded}
           className="absolute -right-3 top-4 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md"
-          style={{ backgroundColor: 'var(--toggle-btn, #ee0434)', color: 'white' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'var(--toggle-btn-hover, #D25353)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--toggle-btn, #ee0434)'}
+          style={{ backgroundColor: '#ee0434', color: 'white' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D25353'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ee0434'}
         >
-          <style>{`.dark { --toggle-btn: #FF204E; --toggle-btn-hover: #A0153E; }`}</style>
           {isExpanded ? <ChevronRight className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
 
@@ -124,28 +118,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto">
             <div className={`space-y-1 ${!isExpanded && 'flex flex-col items-center'}`}>
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all mb-4 ${
-                  !isExpanded && 'justify-center'
-                }`}
-                style={{ backgroundColor: 'var(--theme-toggle-bg, rgba(255, 255, 255, 0.5))', color: 'var(--theme-toggle-text, #334155)' }}
-                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
-              >
-                <style>{`.dark { --theme-toggle-bg: rgba(255, 32, 78, 0.2); --theme-toggle-text: #FF204E; }`}</style>
-                {theme === 'light' ? (
-                  <Moon className="w-5 h-5 flex-shrink-0" />
-                ) : (
-                  <Sun className="w-5 h-5 flex-shrink-0" />
-                )}
-                {isExpanded && (
-                  <span className="text-sm font-medium truncate">
-                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                  </span>
-                )}
-              </button>
-
               {sections.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
@@ -158,33 +130,24 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                       !isExpanded && 'justify-center'
                     }`}
                     style={{
-                      backgroundColor: isActive ? 'var(--nav-active, #ee0434)' : 'transparent',
-                      color: isActive ? 'white' : 'var(--nav-text, #9E3B3B)',
-                      boxShadow: isActive ? '0 4px 6px -1px var(--nav-shadow, rgba(238, 4, 52, 0.2))' : 'none'
+                      backgroundColor: isActive ? '#ee0434' : 'transparent',
+                      color: isActive ? 'white' : '#9E3B3B',
+                      boxShadow: isActive ? '0 4px 6px -1px rgba(238, 4, 52, 0.2)' : 'none'
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = 'var(--nav-hover-bg, #f8f0ea)';
-                        e.currentTarget.style.color = 'var(--nav-hover-text, #ee0434)';
+                        e.currentTarget.style.backgroundColor = '#f8f0ea';
+                        e.currentTarget.style.color = '#ee0434';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
                         e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = 'var(--nav-text, #9E3B3B)';
+                        e.currentTarget.style.color = '#9E3B3B';
                       }
                     }}
                     title={!isExpanded ? section.label : ''}
                   >
-                    <style>{`
-                      .dark {
-                        --nav-active: #FF204E;
-                        --nav-text: #FFB6C1;
-                        --nav-shadow: rgba(255, 32, 78, 0.3);
-                        --nav-hover-bg: rgba(160, 21, 62, 0.3);
-                        --nav-hover-text: #FF204E;
-                      }
-                    `}</style>
                     <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && 'animate-pulse'}`} />
                     {isExpanded && (
                       <span className="text-sm font-medium truncate">{section.label}</span>
@@ -211,17 +174,16 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         <button
           onClick={scrollToTop}
           className="fixed bottom-8 right-8 w-12 h-12 rounded-full shadow-lg transition-all flex items-center justify-center z-50"
-          style={{ backgroundColor: 'var(--scroll-btn, #ee0434)', color: 'white' }}
+          style={{ backgroundColor: '#ee0434', color: 'white' }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--scroll-btn-hover, #D25353)';
+            e.currentTarget.style.backgroundColor = '#D25353';
             e.currentTarget.style.transform = 'scale(1.1)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--scroll-btn, #ee0434)';
+            e.currentTarget.style.backgroundColor = '#ee0434';
             e.currentTarget.style.transform = 'scale(1)';
           }}
         >
-          <style>{`.dark { --scroll-btn: #FF204E; --scroll-btn-hover: #A0153E; }`}</style>
           <ChevronUp className="w-6 h-6" />
         </button>
       )}

@@ -252,15 +252,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 transition-colors duration-300" style={{ backgroundColor: 'var(--dark-bg, #f8fafc)' }}>
-      <style>{`
-        .dark {
-          --dark-bg: #00224D;
-          --dark-panel: #5D0E41;
-          --dark-accent: #A0153E;
-          --dark-primary: #FF204E;
-        }
-      `}</style>
+    <div className="min-h-screen bg-slate-50">
       {/* Sidebar Navigation */}
       <SidebarNavigation
         activeSection={activeSection}
@@ -273,8 +265,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-[#f8f0ea] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ backgroundColor: 'var(--nav-bg, #f8f0ea)', borderBottomColor: 'var(--nav-border, #ee0434)', borderBottomWidth: '3px' }}>
-        <style>{`.dark { --nav-bg: #5D0E41; --nav-border: #FF204E; }`}</style>
+      <nav className="bg-[#f8f0ea] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">
@@ -297,15 +288,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ backgroundColor: 'var(--input-bg, white)', borderColor: 'var(--input-border, #EA7B7B)', borderWidth: '1px' }}>
-              <style>{`.dark { --input-bg: #00224D; --input-border: #A0153E; }`}</style>
+            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
               <Calendar className="w-4 h-4" style={{ color: '#ee0434' }} />
               <input
                 type="date"
                 value={formatDateForInput(selectedDate)}
                 onChange={handleDateChange}
                 max={formatDateForInput(new Date())}
-                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer dark:text-slate-200"
+                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
                 style={{ color: '#9E3B3B' }}
               />
             </div>
@@ -379,19 +369,17 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             {/* Panel 4: Decision Tree Trace */}
             <div ref={(el) => { sectionRefs.current['decision-trace'] = el; }} id="decision-trace">
               {decisionTraceLoading ? (
-                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)', borderColor: 'var(--border-color, #e5e7eb)' }}>
-                  <style>{`.dark { --panel-bg: #5D0E41; --border-color: #A0153E; }`}</style>
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
                     <Activity className="w-5 h-5 animate-pulse text-primary-600" />
-                    <span className="text-gray-600 dark:text-gray-300">Loading decision trace from ML model...</span>
+                    <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>
               ) : !decisionTrace ? (
-                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)', borderColor: 'var(--border-color, #e5e7eb)' }}>
-                  <style>{`.dark { --panel-bg: #5D0E41; --border-color: #A0153E; }`}</style>
-                  <div className="text-center text-gray-500 dark:text-gray-300">
-                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">No Analysis Selected</h3>
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
+                  <div className="text-center text-gray-500">
+                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
                     <p className="text-sm">Click on any cell in the table above to run ML prediction and view the decision tree trace.</p>
                   </div>
                 </div>
@@ -420,8 +408,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       {/* Footer */}
       <footer className={`bg-[#f8f0ea] text-center py-4 mt-12 transition-all duration-300 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
-      }`} style={{ backgroundColor: 'var(--nav-bg, #f8f0ea)', borderTopColor: 'var(--nav-border, #ee0434)', borderTopWidth: '3px' }}>
-        <style>{`.dark { --nav-bg: #5D0E41; --nav-border: #FF204E; }`}</style>
+      }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
         <p className="text-xs" style={{ color: '#9E3B3B' }}>
           VULCAN - <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
           {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
