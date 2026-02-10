@@ -147,7 +147,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
       return {
         id: `alarm_${alarm.event_id}`,
         type: 'kpi_guardrail_violated' as const,
-        message: `${alarm.event_name}: ${alarm.specific_problem}`,
+        message: `[${alarm.source_name}] ${alarm.event_name}: ${alarm.specific_problem}`,
         timestamp: new Date(alarm.trigger_instant),
         severity,
       };
