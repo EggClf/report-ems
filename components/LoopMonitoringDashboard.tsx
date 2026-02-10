@@ -126,13 +126,25 @@ export const LoopMonitoringDashboard: React.FC = () => {
   /**
    * Build ExecutionOutcome with real KPI data from backend
    */
+  const getExecutionTimeForDate = (date: Date): Date => {
+    const normalized = new Date(date);
+    const now = new Date();
+    if (normalized.toDateString() === now.toDateString()) {
+      normalized.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), 0);
+    } else {
+      normalized.setHours(12, 0, 0, 0);
+    }
+    return normalized;
+  };
+
   const buildExecutionOutcome = async (
     planId: string,
     intentId: string,
     cellname: string,
-    taskType: 'MRO' | 'ES'
+    taskType: 'MRO' | 'ES',
+    executionDate: Date
   ): Promise<ExecutionOutcome> => {
-    const executionTime = new Date();
+    const executionTime = getExecutionTimeForDate(executionDate);
     const executionId = `exec_${Date.now()}`;
 
     // Fetch real KPI deltas from backend
@@ -235,7 +247,8 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         newPlannerOutput.planId,
         trace.intentId,
         cell.cellname,
-        modelType
+        modelType,
+        selectedDate
       );
       setExecutionOutcome(outcome);
 
