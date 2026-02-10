@@ -5,7 +5,7 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-12">
 
-      <nav className="bg-[#F2E8C6] px-6 py-4 shadow-md sticky top-0 z-50" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
+      <nav className="bg-[#f8f0ea] px-6 py-4 shadow-md sticky top-0 z-50" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">

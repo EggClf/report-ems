@@ -69,7 +69,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <>
       {/* Sidebar - Hidden on mobile by default */}
-      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#F2E8C6] shadow-lg transition-all duration-300 z-40
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#f8f0ea] shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
       `} style={{ borderRightColor: '#EA7B7B', borderRightWidth: '2px' }}>
@@ -136,7 +136,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = '#F2E8C6';
+                        e.currentTarget.style.backgroundColor = '#f8f0ea';
                         e.currentTarget.style.color = '#ee0434';
                       }
                     }}
