@@ -32,7 +32,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
           'HO Failure': cell['Handover Failure Pressure'],
           'HO Stability': cell['Handover Success Stability'],
           'typeof HO Failure': typeof cell['Handover Failure Pressure'],
-          'typeof HO Stability': typeof typeof cell['Handover Success Stability']
+          'typeof HO Stability': typeof cell['Handover Success Stability']
         });
       }
       return hasMRO;
