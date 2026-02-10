@@ -276,7 +276,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 VULCAN
               </h1>
               <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}>
-                Viettel Unified Logic and Control for Autonomous Network
+                <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
               </p>
             </div>
           </div>
@@ -410,7 +410,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
         <p className="text-xs" style={{ color: '#9E3B3B' }}>
-          VULCAN - Viettel Unified Logic and Control for Autonomous Network
+          VULCAN - <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
           {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
       </footer>

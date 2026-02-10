@@ -13,7 +13,7 @@ export const Dashboard: React.FC = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight" style={{ color: '#9E3B3B' }}>VULCAN<span style={{ color: '#ee0434' }}>EMS</span></h1>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}>Viettel Unified Logic and Control for Autonomous Network</p>
+              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}><b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork</p>
             </div>
           </div>
 
@@ -32,8 +32,8 @@ export const Dashboard: React.FC = () => {
             <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
           </div>
           <h3 className="text-lg font-bold text-slate-900 mb-2">VULCAN EMS Dashboard</h3>
-          <p className="text-slate-500 max-w-sm">
-            Viettel Unified Logic and Control for Autonomous Network - Energy Management System
+          <p className="text-slate-500 max-w-sm text-center">
+            <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork - Energy Management System
           </p>
         </div>
       </main>
