@@ -52,7 +52,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <Activity className="w-8 h-8 animate-spin text-indigo-600 mx-auto mb-2" />
+            <Activity className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
             <p className="text-gray-600">Loading cell data...</p>
           </div>
         </div>
@@ -64,7 +64,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-          <Server className="w-6 h-6 text-indigo-600" />
+          <Server className="w-6 h-6 text-primary-600" />
           Network Cells ({cells.length})
         </h2>
 
@@ -100,13 +100,13 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
           placeholder="Search by cell name or NE name..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
         />
       </div>
 
       {/* Info Banner */}
-      <div className="mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-        <div className="text-sm text-indigo-800">
+      <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg">
+        <div className="text-sm text-primary-800">
           <strong>Instructions:</strong> Click on any cell to run {selectedModelType} model prediction
           and view the decision tree trace with feature importance analysis.
         </div>
@@ -143,7 +143,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                 >
                   {/* Cell Name */}
                   <div className="col-span-3 flex items-center">
-                    <span className="text-sm font-mono font-semibold text-slate-700 group-hover:text-indigo-600">
+                    <span className="text-sm font-mono font-semibold text-slate-700 group-hover:text-primary-600">
                       {cell.cellname}
                     </span>
                   </div>
@@ -227,7 +227,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                   {/* Action Button */}
                   <div className="col-span-1 flex items-center justify-center">
                     {hasFeatures ? (
-                      <ChevronRight className="w-5 h-5 text-indigo-600 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight className="w-5 h-5 text-primary-600 group-hover:translate-x-1 transition-transform" />
                     ) : (
                       <span className="text-xs text-gray-400">No data</span>
                     )}

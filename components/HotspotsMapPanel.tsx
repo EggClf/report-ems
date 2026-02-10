@@ -42,7 +42,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-          <MapPin className="w-6 h-6 text-indigo-600" />
+          <MapPin className="w-6 h-6 text-primary-600" />
           Network Hotspots Map
         </h2>
         <div className="flex gap-2">
@@ -50,7 +50,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
             onClick={() => setViewMode('map')}
             className={`px-3 py-1 text-sm rounded-md transition-colors ${
               viewMode === 'map'
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
             }`}
           >
@@ -60,7 +60,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
             onClick={() => setViewMode('list')}
             className={`px-3 py-1 text-sm rounded-md transition-colors ${
               viewMode === 'list'
-                ? 'bg-indigo-600 text-white'
+                ? 'bg-primary-600 text-white'
                 : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
             }`}
           >
@@ -84,7 +84,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
             const top = ((hotspot.lat || 15) - 10.5) / 11 * 100; // Normalize to 0-100%
             const left = ((hotspot.lng || 105) - 102) / 7 * 100;
             const severity = getSeverityLabel(hotspot.severityScore);
-            
+
             return (
               <div
                 key={hotspot.id}
@@ -121,11 +121,11 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
           <div className="space-y-1 max-h-96 overflow-y-auto">
             {topKHotspots.map((hotspot, idx) => {
               const severity = getSeverityLabel(hotspot.severityScore);
-              
+
               return (
                 <div
                   key={hotspot.id}
-                  className={`group grid grid-cols-12 gap-2 px-4 py-3 rounded-md border-2 hover:border-indigo-400 transition-all cursor-pointer bg-white hover:shadow-md ${getIntentBorderColor(hotspot.intentLabel)} border-opacity-30`}
+                  className={`group grid grid-cols-12 gap-2 px-4 py-3 rounded-md border-2 hover:border-primary-400 transition-all cursor-pointer bg-white hover:shadow-md ${getIntentBorderColor(hotspot.intentLabel)} border-opacity-30`}
                   onClick={() => onHotspotClick?.(hotspot)}
                 >
                   <div className="col-span-1 flex items-center">
@@ -153,7 +153,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
                   </div>
                   <div className="col-span-2 flex items-center justify-between">
                     <span className="text-xs text-slate-600 truncate">{hotspot.reason}</span>
-                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                    <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary-600 transition-colors" />
                   </div>
                 </div>
               );
@@ -165,7 +165,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
       {/* Summary stats */}
       <div className="mt-4 grid grid-cols-3 gap-4 pt-4 border-t border-slate-200">
         <div className="text-center">
-          <div className="text-2xl font-bold text-indigo-600">{hotspots.length}</div>
+          <div className="text-2xl font-bold text-primary-600">{hotspots.length}</div>
           <div className="text-xs text-slate-600">Total Hotspots</div>
         </div>
         <div className="text-center">

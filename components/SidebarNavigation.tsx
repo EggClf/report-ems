@@ -76,7 +76,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         {/* Toggle Button */}
         <button
           onClick={onToggleExpanded}
-          className="absolute -right-3 top-4 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center hover:bg-indigo-700 transition-colors shadow-md"
+          className="absolute -right-3 top-4 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors shadow-md"
         >
           {isExpanded ? <ChevronRight className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
@@ -101,7 +101,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-slate-600">Intents</span>
-                  <span className="text-xs font-bold text-indigo-600">{intentCount}</span>
+                  <span className="text-xs font-bold text-primary-600">{intentCount}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -125,7 +125,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     onClick={() => onNavigate(section.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
                       isActive
-                        ? 'bg-indigo-600 text-white shadow-md'
+                        ? 'bg-primary-600 text-white shadow-md'
                         : 'text-slate-700 hover:bg-slate-100'
                     } ${!isExpanded && 'justify-center'}`}
                     title={!isExpanded ? section.label : ''}
@@ -155,7 +155,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center z-50 hover:scale-110"
+          className="fixed bottom-8 right-8 w-12 h-12 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all flex items-center justify-center z-50 hover:scale-110"
         >
           <ChevronUp className="w-6 h-6" />
         </button>

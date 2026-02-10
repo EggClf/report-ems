@@ -44,7 +44,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-          <Cpu className="w-6 h-6 text-indigo-600" />
+          <Cpu className="w-6 h-6 text-primary-600" />
           Action Planner Output
         </h2>
         <div className={`px-3 py-1 rounded border font-semibold ${getUseCaseColor(planner.useCase)}`}>
@@ -67,8 +67,8 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
           <div className="text-sm font-semibold text-slate-800">
             {planner.useCase === 'ES' && 'Energy Saving'}
             {planner.useCase === 'MRO' && 'Mobility Robustness Optimization'}
-            {planner.useCase === 'TS' && 'Traffic Steering'}
-            {planner.useCase === 'QoS' && 'Quality of Service'}
+            {/* {planner.useCase === 'TS' && 'Traffic Steering'}
+            {planner.useCase === 'QoS' && 'Quality of Service'} */}
           </div>
         </div>
       </div>
@@ -83,20 +83,20 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
           {planner.candidateActions.map((action, idx) => {
             const isSelected = selectedAction === action.id;
             const riskLabel = getRiskLabel(action.riskScore);
-            
+
             return (
               <div
                 key={action.id}
                 className={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                   isSelected
-                    ? 'border-indigo-500 bg-indigo-50 shadow-md'
-                    : 'border-slate-200 hover:border-indigo-300'
+                    ? 'border-primary-500 bg-primary-50 shadow-md'
+                    : 'border-slate-200 hover:border-primary-300'
                 }`}
                 onClick={() => handleActionClick(action.id)}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-start gap-3 flex-1">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-600 text-white text-sm font-bold">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary-600 text-white text-sm font-bold">
                       {idx + 1}
                     </div>
                     <div className="flex-1">

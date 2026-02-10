@@ -61,7 +61,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <Activity className="w-6 h-6 text-indigo-600" />
+        <Activity className="w-6 h-6 text-primary-600" />
         Loop Status Overview
       </h2>
 
@@ -100,7 +100,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
             <Layers className="w-3 h-3" />
             Active Intents
           </div>
-          <div className="text-3xl font-bold text-indigo-600">
+          <div className="text-3xl font-bold text-primary-600">
             {data.activeIntents.reduce((sum, region) => sum + region.count, 0)}
           </div>
           <div className="text-xs text-slate-500 mt-1">Across all regions</div>
@@ -161,7 +161,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
                     <div className="flex-1">
                       <div className="font-medium text-sm text-slate-800">{alert.message}</div>
                       <div className="text-xs text-slate-500 mt-1">
-                        Type: <span className="font-medium">{alert.type.replace(/_/g, ' ')}</span> • 
+                        Type: <span className="font-medium">{alert.type.replace(/_/g, ' ')}</span> •
                         {' '}{new Date(alert.timestamp).toLocaleTimeString()}
                       </div>
                     </div>

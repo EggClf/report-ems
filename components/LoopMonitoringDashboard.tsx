@@ -262,7 +262,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       <nav className="bg-slate-900 text-white px-6 py-4 shadow-lg sticky top-0 z-50">
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-indigo-600 rounded-lg">
+            <div className="p-2 bg-primary-600 rounded-lg">
               <Network className="w-5 h-5 text-white" />
             </div>
             <div>
@@ -283,7 +283,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
             {/* Date Picker */}
             <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700">
-              <Calendar className="w-4 h-4 text-indigo-400" />
+              <Calendar className="w-4 h-4 text-primary-400" />
               <input
                 type="date"
                 value={selectedDate.toISOString().split('T')[0]}
@@ -352,8 +352,8 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
             {/* Detailed Analysis Section */}
             {selectedCell && (
-            <div className="p-4 bg-indigo-50 border-2 border-indigo-300 rounded-lg">
-              <div className="text-sm font-semibold text-indigo-800">
+            <div className="p-4 bg-primary-50 border-2 border-primary-300 rounded-lg">
+              <div className="text-sm font-semibold text-primary-800">
                 📍 Viewing {selectedModelType} analysis for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                 {' '}(NE: {selectedCell.ne_name})
               </div>
@@ -365,7 +365,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               {decisionTraceLoading ? (
                 <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
-                    <Activity className="w-5 h-5 animate-pulse text-indigo-600" />
+                    <Activity className="w-5 h-5 animate-pulse text-primary-600" />
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>

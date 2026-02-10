@@ -13,17 +13,17 @@ export const ActionPanel: React.FC<Props> = ({ action }) => {
         <Settings className="w-4 h-4 text-slate-500" />
         Recommended Parameters
       </h4>
-      
+
       <div className="space-y-3">
         {action.profile && (
           <div className="flex justify-between items-center border-b border-slate-200 pb-2">
             <span className="text-xs text-slate-500 uppercase tracking-wide">Profile</span>
-            <span className="text-sm font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded">
+            <span className="text-sm font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded">
               {action.profile}
             </span>
           </div>
         )}
-        
+
         {action.mode && (
           <div className="flex justify-between items-center border-b border-slate-200 pb-2">
              <span className="text-xs text-slate-500 uppercase tracking-wide">Mode</span>

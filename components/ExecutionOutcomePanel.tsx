@@ -35,11 +35,11 @@ const getStatusIcon = (status: ExecutionStatus) => {
 export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ outcome }) => {
   const lastLog = outcome.logs[outcome.logs.length - 1];
   const isFailed = lastLog.status === 'failed' || lastLog.status === 'rollback';
-  
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <Play className="w-6 h-6 text-indigo-600" />
+        <Play className="w-6 h-6 text-primary-600" />
         Execution & Outcome Analysis
       </h2>
 
@@ -68,7 +68,7 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
         <div className="relative">
           {/* Timeline line */}
           <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-200"></div>
-          
+
           <div className="space-y-3">
             {outcome.logs.map((log, idx) => (
               <div key={idx} className="relative flex items-start gap-4">
@@ -121,15 +121,15 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {outcome.kpiDeltas.map((kpi) => {
               const isPositive = kpi.deltaPercent > 0;
-              const isImprovement = 
+              const isImprovement =
                 (kpi.metric.includes('Throughput') || kpi.metric.includes('Success')) ? isPositive :
                 (kpi.metric.includes('Drop') || kpi.metric.includes('Utilization')) ? !isPositive :
                 isPositive;
-              
+
               return (
                 <div key={kpi.metric} className={`border-2 rounded-lg p-4 ${
-                  isImprovement 
-                    ? 'border-green-300 bg-green-50' 
+                  isImprovement
+                    ? 'border-green-300 bg-green-50'
                     : 'border-orange-300 bg-orange-50'
                 }`}>
                   <div className="flex items-start justify-between mb-2">
@@ -140,7 +140,7 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
                       <TrendingDown className="w-5 h-5 text-orange-600" />
                     )}
                   </div>
-                  
+
                   <div className="grid grid-cols-3 gap-2 text-sm mb-2">
                     <div>
                       <div className="text-xs text-slate-600">Before</div>
@@ -157,14 +157,14 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-slate-600">Change:</span>
                     <span className={`font-bold ${isImprovement ? 'text-green-600' : 'text-orange-600'}`}>
                       {isPositive ? '+' : ''}{kpi.deltaPercent.toFixed(1)}%
                     </span>
                   </div>
-                  
+
                   <div className="mt-2 text-xs text-slate-600">
                     Window: {kpi.timeWindowMinutes} minutes
                   </div>
@@ -179,8 +179,8 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">Attribution Analysis</h3>
         <div className={`border-2 rounded-lg p-4 ${
-          outcome.attribution.success 
-            ? 'border-green-300 bg-green-50' 
+          outcome.attribution.success
+            ? 'border-green-300 bg-green-50'
             : 'border-orange-300 bg-orange-50'
         }`}>
           <div className="flex items-center justify-between mb-2">
@@ -202,7 +202,7 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
             </div>
           </div>
           <div className="text-xs text-slate-700 mt-2">
-            {outcome.attribution.success 
+            {outcome.attribution.success
               ? 'KPI improvements are strongly correlated with the executed action.'
               : 'KPI changes may be influenced by external factors. Further monitoring recommended.'}
           </div>

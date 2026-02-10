@@ -24,10 +24,10 @@ const getConfidenceColor = (confidence: number) => {
   return 'text-orange-600 bg-orange-50';
 };
 
-export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({ 
-  intents, 
-  distribution, 
-  onIntentClick 
+export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
+  intents,
+  distribution,
+  onIntentClick
 }) => {
   const [selectedTimeRange, setSelectedTimeRange] = useState<'1h' | '6h' | '24h'>('24h');
 
@@ -58,7 +58,7 @@ export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <Brain className="w-6 h-6 text-indigo-600" />
+        <Brain className="w-6 h-6 text-primary-600" />
         Intent Classification Engine
       </h2>
 
@@ -67,7 +67,7 @@ export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
         {Object.entries(intentSummary).map(([label, count]) => {
           const confidence = avgConfidence[label as IntentLabel];
           const avgConf = confidence ? confidence.sum / confidence.count : 0;
-          
+
           return (
             <div
               key={label}
@@ -100,7 +100,7 @@ export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
                 onClick={() => setSelectedTimeRange(range)}
                 className={`px-2 py-1 text-xs rounded transition-colors ${
                   selectedTimeRange === range
-                    ? 'bg-indigo-600 text-white'
+                    ? 'bg-primary-600 text-white'
                     : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                 }`}
               >
@@ -198,7 +198,7 @@ export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
       {/* Baseline Comparison Note */}
       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="text-xs text-blue-800">
-          <strong>AI Model Performance:</strong> Intent classification accuracy at 94.2% 
+          <strong>AI Model Performance:</strong> Intent classification accuracy at 94.2%
           (12% improvement vs rule-based baseline). Drift analysis: Normal operational pattern observed.
         </div>
       </div>
