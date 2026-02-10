@@ -16,8 +16,8 @@ import {
 } from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
-import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse } from '../services/api';
-import { Hotspot, ExecutionOutcome, ExecutionStatus } from '../types-v2';
+import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
+import { Hotspot, ExecutionOutcome, ExecutionStatus, Priority } from '../types-v2';
 import { DecisionTreeTrace } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
@@ -50,10 +50,22 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [planData, setPlanData] = useState<PlanLoadResponse | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
 
+  // Real alarm data from backend
+  const [alarmData, setAlarmData] = useState<AlarmRecord[]>([]);
+  const [alarmsLoading, setAlarmsLoading] = useState(false);
+
   // Load cell data when date changes
   useEffect(() => {
     loadCellData(selectedDate);
   }, [selectedDate]);
+
+  // Load alarm data on mount and periodically
+  useEffect(() => {
+    loadAlarmData();
+    // Refresh alarms every 30 seconds
+    const intervalId = setInterval(loadAlarmData, 30000);
+    return () => clearInterval(intervalId);
+  }, []);
 
   // Auto-load plan data when date or task type changes
   useEffect(() => {
@@ -93,6 +105,53 @@ export const LoopMonitoringDashboard: React.FC = () => {
     } finally {
       setPlanLoading(false);
     }
+  };
+
+  // Load alarm data from backend
+  const loadAlarmData = async () => {
+    setAlarmsLoading(true);
+    try {
+      const response = await fetchCurrentAlarms();
+      setAlarmData(response.data);
+      console.log(`✓ Loaded ${response.records_count} active alarms`);
+    } catch (error) {
+      console.error('Failed to load alarm data:', error);
+      setAlarmData([]);
+    } finally {
+      setAlarmsLoading(false);
+    }
+  };
+
+  // Transform alarm data to Alert format
+  const transformAlarmsToAlerts = (alarms: AlarmRecord[]) => {
+    return alarms.map((alarm) => {
+      // Map backend severity to frontend priority
+      let severity: Priority;
+      switch (alarm.severity) {
+        case 'CRITICAL':
+          severity = 'critical';
+          break;
+        case 'MAJOR':
+          severity = 'high';
+          break;
+        case 'MINOR':
+          severity = 'medium';
+          break;
+        case 'WARNING':
+          severity = 'low';
+          break;
+        default:
+          severity = 'medium';
+      }
+
+      return {
+        id: `alarm_${alarm.event_id}`,
+        type: 'kpi_guardrail_violated' as const,
+        message: `${alarm.event_name}: ${alarm.specific_problem}`,
+        timestamp: new Date(alarm.trigger_instant),
+        severity,
+      };
+    });
   };
 
   // Scroll tracking for active section
@@ -302,7 +361,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         activeSection={activeSection}
         onNavigate={handleNavigate}
         loopStatus={overviewData.loopStatus}
-        alertCount={overviewData.alerts.length}
+        alertCount={alarmData.length}
         intentCount={cells.length}
         hotspotCount={hotspots.length}
         isExpanded={sidebarExpanded}
@@ -389,7 +448,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       }`}>
         <QuickStatsBar
           loopStatus={overviewData.loopStatus}
-          alertCount={overviewData.alerts.length}
+          alertCount={alarmData.length}
           intentCount={cells.length}
           hotspotCount={hotspots.length}
           onNavigate={handleNavigate}
@@ -404,7 +463,10 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
           <div className="space-y-6">
             {/* Panel 1: Overview */}
             <div ref={(el) => { sectionRefs.current['overview'] = el; }} id="overview">
-              <OverviewPanel data={overviewData} />
+              <OverviewPanel data={{
+                ...overviewData,
+                alerts: transformAlarmsToAlerts(alarmData),
+              }} />
             </div>
 
             {/* Intent Legend */}

@@ -297,3 +297,54 @@ export const fetchPlanData = async (request: PlanLoadRequest): Promise<PlanLoadR
 
     return await response.json();
 };
+
+// ─── Historical Alarm API ────────────────────────────────────────────────
+
+export interface AlarmRecord {
+    event_id: number;
+    event_name: string;
+    initial_instant: string;
+    trigger_instant: string;
+    source_name: string;
+    severity: 'CRITICAL' | 'MAJOR' | 'MINOR' | 'WARNING';
+    specific_problem: string;
+    additional_info: string;
+}
+
+export interface CurrentAlarmsResponse {
+    records_count: number;
+    alarm_columns: string[];
+    source_names_included: string[];
+    severities_included: string[];
+    data: AlarmRecord[];
+}
+
+/**
+ * Fetch currently active alarms from the backend
+ */
+export const fetchCurrentAlarms = async (): Promise<CurrentAlarmsResponse> => {
+    try {
+        const response = await fetch('http://172.16.28.63:8000/historical-alarm/current', {
+            method: 'GET',
+            headers: {
+                'accept': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch current alarms: ${response.statusText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching current alarms:', error);
+        // Return empty response on error
+        return {
+            records_count: 0,
+            alarm_columns: [],
+            source_names_included: [],
+            severities_included: [],
+            data: [],
+        };
+    }
+};
