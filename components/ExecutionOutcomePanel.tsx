@@ -37,8 +37,9 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
   const isFailed = lastLog.status === 'failed' || lastLog.status === 'rollback';
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
         <Play className="w-6 h-6 text-primary-600" />
         Execution & Outcome Analysis
       </h2>

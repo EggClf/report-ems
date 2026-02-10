@@ -56,8 +56,9 @@ export const IntentClassifierPanel: React.FC<IntentClassifierPanelProps> = ({
   }, {} as Record<IntentLabel, { sum: number; count: number }>);
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
         <Brain className="w-6 h-6 text-primary-600" />
         Intent Classification Engine
       </h2>

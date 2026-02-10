@@ -9,7 +9,8 @@ interface HotspotsMapPanelProps {
 
 export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, onHotspotClick }) => {
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
           <MapPin className="w-6 h-6 text-primary-600" />

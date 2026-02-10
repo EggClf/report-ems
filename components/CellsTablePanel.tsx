@@ -49,7 +49,8 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
 
   if (loading) {
     return (
-      <div className="bg-[#fdf9f8] dark:bg-slate-800 rounded-lg shadow-md p-6">
+      <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+        <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Activity className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
@@ -61,7 +62,8 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
   }
 
   return (
-    <div className="bg-[#fdf9f8] dark:bg-slate-800 rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <Server className="w-6 h-6 text-primary-600" />

@@ -59,7 +59,8 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
   const freshnessStatus = getDataFreshnessStatus();
 
   return (
-    <div className="bg-[#fdf9f8] dark:bg-slate-800 rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
       <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
         <Activity className="w-6 h-6 text-primary-600" />
         Loop Status Overview
@@ -67,7 +68,8 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Loop Status */}
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <div className="border border-slate-200 rounded-lg p-4" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
+          <style>{`.dark { --border-color: #A0153E; }`}</style>
           <div className="text-sm text-slate-600 dark:text-slate-400 mb-2">Loop Status</div>
           <div className={`flex items-center gap-2 font-semibold text-lg px-3 py-2 rounded-md ${getStatusColor(data.loopStatus)}`}>
             {getStatusIcon(data.loopStatus)}
@@ -76,7 +78,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
         </div>
 
         {/* Data Freshness */}
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <div className="border border-slate-200 rounded-lg p-4" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="text-sm text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1">
             <Clock className="w-3 h-3" />
             Data Freshness
@@ -95,7 +97,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
         </div>
 
         {/* Total Active Intents */}
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <div className="border border-slate-200 rounded-lg p-4" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="text-sm text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1">
             <Layers className="w-3 h-3" />
             Active Intents
@@ -107,7 +109,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
         </div>
 
         {/* Alerts Count */}
-        <div className="border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+        <div className="border border-slate-200 rounded-lg p-4" style={{ borderColor: 'var(--border-color, #e2e8f0)' }}>
           <div className="text-sm text-slate-600 dark:text-slate-400 mb-2 flex items-center gap-1">
             <AlertTriangle className="w-3 h-3" />
             Active Alerts

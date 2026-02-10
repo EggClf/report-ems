@@ -25,7 +25,8 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
   };
 
   return (
-    <div className="bg-[#fdf9f8] shadow-sm" style={{ borderBottomColor: '#EA7B7B', borderBottomWidth: '1px' }}>
+    <div className="bg-[#fdf9f8] shadow-sm" style={{ backgroundColor: 'var(--stats-bg, #fdf9f8)', borderBottomColor: 'var(--stats-border, #EA7B7B)', borderBottomWidth: '1px' }}>
+      <style>{`.dark { --stats-bg: #5D0E41; --stats-border: #A0153E; }`}</style>
       <div className="max-w-[1920px] mx-auto px-6 py-3">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {/* Loop Status */}

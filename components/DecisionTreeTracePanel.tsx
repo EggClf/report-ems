@@ -426,21 +426,22 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
   };
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
+      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
+      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
         <BookOpen className="w-6 h-6 text-primary-600" />
         Decision Explanation: Why {finalActionLabel}?
       </h2>
 
       {/* Tab Navigation */}
-      <div className="border-b border-slate-200 mb-6">
+      <div className="border-b border-slate-200 dark:border-slate-700 mb-6">
         <div className="flex gap-2">
           <button
             onClick={() => setActiveTab('explanation')}
             className={`px-6 py-3 font-semibold text-sm transition-colors relative ${
               activeTab === 'explanation'
-                ? 'text-primary-700 border-b-2 border-primary-600'
-                : 'text-slate-600 hover:text-slate-800'
+                ? 'text-primary-700 dark:text-primary-400 border-b-2 border-primary-600'
+                : 'text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
             <span className="flex items-center gap-2">
