@@ -458,7 +458,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
           >
             <span className="flex items-center gap-2">
               <GitBranch className="w-4 h-4" />
-              Details
+              Reasoning Path
             </span>
           </button>
         </div>

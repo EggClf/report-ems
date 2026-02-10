@@ -11,7 +11,6 @@ import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
 import {
   getMockOverviewData,
-  getMockHotspots,
   getMockPlannerOutput,
   getMockExecutionOutcome
 } from '../services/mockDataV2';
@@ -36,7 +35,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
 
   // Load mock data for overview/hotspots
   const [overviewData, setOverviewData] = useState(() => getMockOverviewData());
-  const [hotspots, setHotspots] = useState(() => getMockHotspots());
+  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
 
   // Real cell data from network scan
   const [cells, setCells] = useState<CellFeatures[]>([]);
