@@ -197,7 +197,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                           <span className="text-gray-500">Inefficiency:</span>
                           <span className="font-medium">
                             {(cell['Energy Inefficiency Score'] !== null && cell['Energy Inefficiency Score'] !== undefined)
-                              ? (cell['Energy Inefficiency Score']! * 100).toFixed(0) + '%'
+                              ? (cell['Energy Inefficiency Score']!).toFixed(0)
                               : 'N/A'}
                           </span>
                         </div>
@@ -216,7 +216,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
                           <span className="text-gray-500">HO Stability:</span>
                           <span className="font-medium">
                             {(cell['Handover Success Stability'] !== null && cell['Handover Success Stability'] !== undefined)
-                              ? (cell['Handover Success Stability']! * 100).toFixed(0) + '%'
+                              ? (cell['Handover Success Stability']!).toFixed(0)
                               : 'N/A'}
                           </span>
                         </div>
