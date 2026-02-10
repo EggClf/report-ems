@@ -4,21 +4,21 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans pb-12">
-      {/* Navbar */}
-      <nav className="bg-gradient-to-r from-primary-900 via-primary-800 to-red-900 text-white px-6 py-4 shadow-lg sticky top-0 z-50 border-b-2 border-primary-600">
+
+      <nav className="bg-[#FFEAD3] px-6 py-4 shadow-md sticky top-0 z-50" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">
               <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">VULCAN<span className="text-red-200">EMS</span></h1>
-              <p className="text-[10px] text-red-100/70 uppercase tracking-wider">Viettel Unified Logic and Control for Autonomous Network</p>
+              <h1 className="text-lg font-bold tracking-tight" style={{ color: '#9E3B3B' }}>VULCAN<span style={{ color: '#ee0434' }}>EMS</span></h1>
+              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}>Viettel Unified Logic and Control for Autonomous Network</p>
             </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold ring-2 ring-white/30 backdrop-blur-sm">
+            <div className="h-8 w-8 rounded-full bg-white flex items-center justify-center text-xs font-bold shadow-sm" style={{ borderColor: '#ee0434', borderWidth: '2px', color: '#9E3B3B' }}>
               OP
             </div>
           </div>

@@ -69,14 +69,17 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <>
       {/* Sidebar - Hidden on mobile by default */}
-      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-gradient-to-b from-red-50/50 to-white border-r-2 border-primary-200 shadow-lg transition-all duration-300 z-40
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-white shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
-      `}>
+      `} style={{ borderRightColor: '#EA7B7B', borderRightWidth: '2px' }}>
         {/* Toggle Button */}
         <button
           onClick={onToggleExpanded}
-          className="absolute -right-3 top-4 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center hover:bg-primary-700 transition-colors shadow-md"
+          className="absolute -right-3 top-4 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md"
+          style={{ backgroundColor: '#ee0434', color: 'white' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D25353'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ee0434'}
         >
           {isExpanded ? <ChevronRight className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
@@ -85,8 +88,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         <div className="p-4 h-full flex flex-col">
           {/* Status Summary */}
           {isExpanded && (
-            <div className="mb-4 pb-4 border-b-2 border-primary-200">
-              <div className="text-xs font-semibold text-primary-700 uppercase mb-3">System Status</div>
+            <div className="mb-4 pb-4" style={{ borderBottomColor: '#EA7B7B', borderBottomWidth: '2px' }}>
+              <div className="text-xs font-semibold uppercase mb-3" style={{ color: '#9E3B3B' }}>System Status</div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -124,10 +127,25 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                     key={section.id}
                     onClick={() => onNavigate(section.id)}
                     className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
-                      isActive
-                        ? 'bg-primary-600 text-white shadow-md'
-                        : 'text-slate-700 hover:bg-primary-50 hover:text-primary-700'
-                    } ${!isExpanded && 'justify-center'}`}
+                      !isExpanded && 'justify-center'
+                    }`}
+                    style={{
+                      backgroundColor: isActive ? '#ee0434' : 'transparent',
+                      color: isActive ? 'white' : '#9E3B3B',
+                      boxShadow: isActive ? '0 4px 6px -1px rgba(238, 4, 52, 0.2)' : 'none'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = '#FFEAD3';
+                        e.currentTarget.style.color = '#ee0434';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                        e.currentTarget.style.color = '#9E3B3B';
+                      }
+                    }}
                     title={!isExpanded ? section.label : ''}
                   >
                     <Icon className={`w-5 h-5 flex-shrink-0 ${isActive && 'animate-pulse'}`} />
@@ -142,8 +160,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
           {/* Footer Info */}
           {isExpanded && (
-            <div className="pt-4 border-t-2 border-primary-200">
-              <div className="text-xs text-primary-600 text-center font-semibold">
+            <div className="pt-4" style={{ borderTopColor: '#EA7B7B', borderTopWidth: '2px' }}>
+              <div className="text-xs text-center font-semibold" style={{ color: '#ee0434' }}>
                 VULCAN
               </div>
             </div>
@@ -155,7 +173,16 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
       {showScrollTop && (
         <button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 w-12 h-12 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 transition-all flex items-center justify-center z-50 hover:scale-110"
+          className="fixed bottom-8 right-8 w-12 h-12 rounded-full shadow-lg transition-all flex items-center justify-center z-50"
+          style={{ backgroundColor: '#ee0434', color: 'white' }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#D25353';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#ee0434';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
         >
           <ChevronUp className="w-6 h-6" />
         </button>

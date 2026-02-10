@@ -259,17 +259,17 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-gradient-to-r from-primary-900 via-primary-800 to-red-900 text-white px-6 py-4 shadow-lg sticky top-0 z-50 border-b-2 border-primary-600">
+      <nav className="bg-[#FFEAD3] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">
               <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
             </div>
             <div>
-              <h1 className="text-lg font-bold tracking-tight">
+              <h1 className="text-lg font-bold tracking-tight" style={{ color: '#9E3B3B' }}>
                 VULCAN
               </h1>
-              <p className="text-[10px] text-red-100/70 uppercase tracking-wider">
+              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}>
                 Viettel Unified Logic and Control for Autonomous Network
               </p>
             </div>
@@ -277,31 +277,31 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
           <div className="flex items-center gap-4">
             {/* Last Update */}
-            <div className="text-xs text-red-100/60">
+            <div className="text-xs" style={{ color: '#9E3B3B' }}>
               Last updated: {lastUpdate.toLocaleTimeString()}
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
-              <Calendar className="w-4 h-4 text-red-100" />
+            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
+              <Calendar className="w-4 h-4" style={{ color: '#ee0434' }} />
               <input
                 type="date"
                 value={selectedDate.toISOString().split('T')[0]}
                 onChange={handleDateChange}
                 max={new Date().toISOString().split('T')[0]}
-                className="bg-transparent text-sm font-medium text-white border-none outline-none cursor-pointer"
-                style={{ colorScheme: 'dark' }}
+                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
+                style={{ color: '#9E3B3B' }}
               />
             </div>
 
             {/* Loop Status Indicator */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
               <Activity className={`w-4 h-4 ${
-                overviewData.loopStatus === 'running' ? 'text-green-400 animate-pulse' :
-                overviewData.loopStatus === 'degraded' ? 'text-yellow-400' :
-                'text-gray-400'
+                overviewData.loopStatus === 'running' ? 'text-green-500 animate-pulse' :
+                overviewData.loopStatus === 'degraded' ? 'text-yellow-500' :
+                'text-gray-500'
               }`} />
-              <span className="text-sm font-medium capitalize text-white">{overviewData.loopStatus}</span>
+              <span className="text-sm font-medium capitalize" style={{ color: '#9E3B3B' }}>{overviewData.loopStatus}</span>
             </div>
           </div>
         </div>
@@ -400,10 +400,10 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       </div>
 
       {/* Footer */}
-      <footer className={`bg-gradient-to-r from-primary-900 via-primary-800 to-red-900 text-red-100/70 text-center py-4 mt-12 transition-all duration-300 border-t-2 border-primary-600 ${
+      <footer className={`bg-[#FFEAD3] text-center py-4 mt-12 transition-all duration-300 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
-      }`}>
-        <p className="text-xs">
+      }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
+        <p className="text-xs" style={{ color: '#9E3B3B' }}>
           VULCAN - Viettel Unified Logic and Control for Autonomous Network
           {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
