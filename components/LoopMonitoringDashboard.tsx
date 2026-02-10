@@ -259,7 +259,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-[#FFEAD3] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
+      <nav className="bg-[#F2E8C6] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">
@@ -400,7 +400,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       </div>
 
       {/* Footer */}
-      <footer className={`bg-[#FFEAD3] text-center py-4 mt-12 transition-all duration-300 ${
+      <footer className={`bg-[#F2E8C6] text-center py-4 mt-12 transition-all duration-300 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
         <p className="text-xs" style={{ color: '#9E3B3B' }}>

@@ -32,7 +32,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
           <button
             onClick={() => onNavigate('overview')}
             className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2E8C6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             <div className={`w-3 h-3 rounded-full ${getStatusColor()} animate-pulse`}></div>
@@ -50,7 +50,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
           <button
             onClick={() => onNavigate('overview')}
             className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2E8C6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
@@ -80,10 +80,10 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
           <button
             onClick={() => onNavigate('intents')}
             className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F2E8C6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#FFEAD3' }}>
+            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#F2E8C6' }}>
               <Brain className="w-5 h-5" style={{ color: '#ee0434' }} />
             </div>
             <div>
