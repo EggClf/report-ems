@@ -103,6 +103,23 @@ export interface KPIDelta {
     timeWindowMinutes: number;
 }
 
+const formatLocalDateTime = (date: Date): string => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hour = String(date.getHours()).padStart(2, '0');
+    const minute = String(date.getMinutes()).padStart(2, '0');
+    const second = String(date.getSeconds()).padStart(2, '0');
+
+    const offsetMinutes = -date.getTimezoneOffset();
+    const sign = offsetMinutes >= 0 ? '+' : '-';
+    const absOffset = Math.abs(offsetMinutes);
+    const offsetHours = String(Math.floor(absOffset / 60)).padStart(2, '0');
+    const offsetMins = String(absOffset % 60).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hour}:${minute}:${second}${sign}${offsetHours}:${offsetMins}`;
+};
+
 /**
  * Fetch historical KPI data from the backend
  */
@@ -148,7 +165,7 @@ export const calculateKPIDeltas = async (
         // Fetch "before" data
         const beforeEndTime = new Date(executionTime.getTime() - 5 * 60 * 1000); // 5 min before execution
         const beforeRequest: HistoricalKPIRequest = {
-            timestamp: beforeEndTime.toISOString(),
+            timestamp: formatLocalDateTime(beforeEndTime),
             time_window_hours: beforeWindowHours,
             task_type: taskType,
             cellnames,
@@ -160,7 +177,7 @@ export const calculateKPIDeltas = async (
         const afterStartTime = new Date(executionTime.getTime() + 5 * 60 * 1000); // 5 min after execution
         const afterEndTime = new Date(afterStartTime.getTime() + afterWindowHours * 60 * 60 * 1000);
         const afterRequest: HistoricalKPIRequest = {
-            timestamp: afterEndTime.toISOString(),
+            timestamp: formatLocalDateTime(afterEndTime),
             time_window_hours: afterWindowHours,
             task_type: taskType,
             cellnames,
