@@ -96,6 +96,13 @@ export const LoopMonitoringDashboard: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const formatDateForInput = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const handleNavigate = (sectionId: string) => {
     const element = sectionRefs.current[sectionId];
     if (element) {
@@ -286,9 +293,9 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               <Calendar className="w-4 h-4" style={{ color: '#ee0434' }} />
               <input
                 type="date"
-                value={selectedDate.toISOString().split('T')[0]}
+                value={formatDateForInput(selectedDate)}
                 onChange={handleDateChange}
-                max={new Date().toISOString().split('T')[0]}
+                max={formatDateForInput(new Date())}
                 className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
                 style={{ color: '#9E3B3B' }}
               />
