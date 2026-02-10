@@ -44,12 +44,12 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
     const alarmCount = cell.n_alarm ?? 0;
     if (alarmCount > 5) return 'bg-red-50 border-red-200';
     if (alarmCount > 2) return 'bg-yellow-50 border-yellow-200';
-    return 'bg-white border-gray-200';
+    return 'bg-[#fdf9f8] border-gray-200';
   };
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
+      <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <Activity className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
@@ -61,7 +61,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
           <Server className="w-6 h-6 text-primary-600" />
@@ -138,7 +138,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
               return (
                 <div
                   key={`${cell.cellname}-${index}`}
-                  className={`grid grid-cols-12 gap-2 px-4 py-3 hover:bg-white cursor-pointer transition-all group ${getSeverityColor(cell)}`}
+                  className={`grid grid-cols-12 gap-2 px-4 py-3 hover:bg-[#fdf9f8] cursor-pointer transition-all group ${getSeverityColor(cell)}`}
                   onClick={() => hasFeatures && onCellClick(cell, selectedModelType)}
                 >
                   {/* Cell Name */}

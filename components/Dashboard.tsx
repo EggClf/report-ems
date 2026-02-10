@@ -27,7 +27,7 @@ export const Dashboard: React.FC = () => {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 mt-8 space-y-6">
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-12 text-center h-[600px] flex flex-col items-center justify-center">
+        <div className="bg-[#fdf9f8] rounded-xl shadow-sm border border-slate-200 p-12 text-center h-[600px] flex flex-col items-center justify-center">
           <div className="w-24 h-24 flex items-center justify-center mb-4">
             <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
           </div>

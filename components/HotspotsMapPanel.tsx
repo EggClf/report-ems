@@ -39,7 +39,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
   const topKHotspots = hotspots.slice(0, 10); // Top 10
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
           <MapPin className="w-6 h-6 text-primary-600" />
@@ -125,7 +125,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
               return (
                 <div
                   key={hotspot.id}
-                  className={`group grid grid-cols-12 gap-2 px-4 py-3 rounded-md border-2 hover:border-primary-400 transition-all cursor-pointer bg-white hover:shadow-md ${getIntentBorderColor(hotspot.intentLabel)} border-opacity-30`}
+                  className={`group grid grid-cols-12 gap-2 px-4 py-3 rounded-md border-2 hover:border-primary-400 transition-all cursor-pointer bg-[#fdf9f8] hover:shadow-md ${getIntentBorderColor(hotspot.intentLabel)} border-opacity-30`}
                   onClick={() => onHotspotClick?.(hotspot)}
                 >
                   <div className="col-span-1 flex items-center">

@@ -50,7 +50,7 @@ export const ActionPanel: React.FC<Props> = ({ action }) => {
             <span className="text-xs text-slate-500 uppercase tracking-wide block mb-2">Detailed Params</span>
             <div className="grid grid-cols-2 gap-2">
               {Object.entries(action.parameters).map(([key, val]) => (
-                <div key={key} className="bg-white p-2 rounded border border-slate-200">
+                <div key={key} className="bg-[#fdf9f8] p-2 rounded border border-slate-200">
                   <div className="text-[10px] text-slate-400 mb-0.5 truncate" title={key}>
                     {key.replace(/_/g, ' ')}
                   </div>

@@ -59,7 +59,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
   const freshnessStatus = getDataFreshnessStatus();
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         <Activity className="w-6 h-6 text-primary-600" />
         Loop Status Overview

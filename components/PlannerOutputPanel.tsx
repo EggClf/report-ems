@@ -41,7 +41,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
   const totalConstraints = planner.constraints.length;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
           <Cpu className="w-6 h-6 text-primary-600" />
@@ -134,7 +134,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
                     <div className="text-xs font-semibold text-slate-600 mb-2">Action Parameters:</div>
                     <div className="grid grid-cols-2 gap-2">
                       {Object.entries(action.parameters).map(([key, value]) => (
-                        <div key={key} className="bg-white rounded px-2 py-1 text-xs border border-slate-200">
+                        <div key={key} className="bg-[#fdf9f8] rounded px-2 py-1 text-xs border border-slate-200">
                           <span className="text-slate-600">{key}:</span>{' '}
                           <span className="font-semibold text-slate-800">
                             {Array.isArray(value) ? value.join(', ') : String(value)}
@@ -243,7 +243,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planner,
                 {vendor.affectedParameters.map((param) => (
                   <span
                     key={param}
-                    className="text-xs px-2 py-0.5 rounded bg-white border border-slate-300 text-slate-700"
+                    className="text-xs px-2 py-0.5 rounded bg-[#fdf9f8] border border-slate-300 text-slate-700"
                   >
                     {param}
                   </span>

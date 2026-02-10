@@ -426,7 +426,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
       <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
         <BookOpen className="w-6 h-6 text-primary-600" />
         Decision Explanation: Why {finalActionLabel}?
@@ -705,8 +705,8 @@ function renderTreeNode(path: DecisionTreeTrace['path'], index: number, finalDec
       {/* Current Node */}
       <div className={`px-6 py-4 rounded-lg border-2 shadow-md min-w-[280px] ${
         node.passed
-          ? 'bg-white border-green-400'
-          : 'bg-white border-slate-300 opacity-60'
+          ? 'bg-[#fdf9f8] border-green-400'
+          : 'bg-[#fdf9f8] border-slate-300 opacity-60'
       }`}>
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">

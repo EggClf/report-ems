@@ -370,14 +370,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             {/* Panel 4: Decision Tree Trace */}
             <div ref={(el) => { sectionRefs.current['decision-trace'] = el; }} id="decision-trace">
               {decisionTraceLoading ? (
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
                     <Activity className="w-5 h-5 animate-pulse text-primary-600" />
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>
               ) : !decisionTrace ? (
-                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
                     <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                     <h3 className="text-lg font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
