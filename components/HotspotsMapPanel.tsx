@@ -18,7 +18,7 @@ export const HotspotsMapPanel: React.FC<HotspotsMapPanelProps> = ({ hotspots, on
       </div>
       <div className="flex flex-col items-center justify-center py-20 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
         <MapPin className="w-12 h-12 mb-3 opacity-20" />
-        <p className="text-lg font-medium">current developer will complete later</p>
+        <p className="text-lg font-medium">This feature is under development and will be available soon.</p>
       </div>
     </div>
   );
