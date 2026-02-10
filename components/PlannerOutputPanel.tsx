@@ -27,6 +27,23 @@ const extractCellNames = (entries: ESScheduleEntry[] | ESForecastEntry[]): strin
   return Object.keys(entries[0]).filter((k) => k !== 'hour');
 };
 
+// ─── TTT mapping: backend values (1-10) to actual milliseconds ───────
+const mapTTT = (ttt: number): number => {
+  const tttMapping: Record<number, number> = {
+    1: 40,
+    2: 64,
+    3: 80,
+    4: 100,
+    5: 128,
+    6: 160,
+    7: 256,
+    8: 320,
+    9: 480,
+    10: 512,
+  };
+  return tttMapping[ttt] ?? ttt;
+};
+
 // ─── Custom tooltip ─────────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload) return null;
@@ -263,7 +280,7 @@ const MROConfigChart: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ config
   const chartData = configPlan.map((entry) => ({
     hour: `${entry.hour}`,
     HOM: entry.hom,
-    TTT: entry.ttt,
+    TTT: mapTTT(entry.ttt),
   }));
 
   return (
@@ -285,7 +302,7 @@ const MROConfigChart: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ config
           <YAxis
             yAxisId="right"
             orientation="right"
-            domain={[0, 320]}
+            domain={[0, 512]}
             tick={{ fontSize: 11 }}
             label={{ value: 'TTT (ms)', angle: 90, position: 'insideRight', fontSize: 11, offset: 5 }}
           />
@@ -369,7 +386,7 @@ const MROParamTable: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ configP
                     {entry.hom}
                   </td>
                   <td className="px-3 py-1.5 border border-slate-200 text-center font-mono text-amber-700 font-semibold">
-                    {entry.ttt}
+                    {mapTTT(entry.ttt)}
                   </td>
                   <td className="px-3 py-1.5 border border-slate-200 text-center font-mono">
                     <span className={hosOk ? 'text-green-700' : 'text-amber-700'}>
