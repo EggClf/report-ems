@@ -32,7 +32,6 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
           <button
             onClick={() => onNavigate('overview')}
             className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            style={{ ':hover': { backgroundColor: '#FFEAD3' } }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
@@ -61,9 +60,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
               <div className="text-xs text-slate-500 uppercase">Alerts</div>
               <div className="text-sm font-semibold text-red-600">{alertCount}</div>
             </div>
-          </button>transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          </button>
 
           {/* Hotspots */}
           <button
@@ -80,7 +77,9 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
           </button>
 
           {/* Intents */}
-          <buttontransition-colors group"
+          <button
+            onClick={() => onNavigate('intents')}
+            className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#FFEAD3'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
@@ -89,9 +88,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
             </div>
             <div>
               <div className="text-xs text-slate-500 uppercase">Intents</div>
-              <div className="text-sm font-semibold" style={{ color: '#ee0434' }}
-              <div className="text-xs text-slate-500 uppercase">Intents</div>
-              <div className="text-sm font-semibold text-primary-600">{intentCount}</div>
+              <div className="text-sm font-semibold" style={{ color: '#ee0434' }}>{intentCount}</div>
             </div>
           </button>
         </div>
