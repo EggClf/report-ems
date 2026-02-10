@@ -234,3 +234,66 @@ function getMetricsForTaskType(taskType: 'MRO' | 'ES'): string[] {
         ];
     }
 }
+
+// ─── Plan / Load API ────────────────────────────────────────────────
+
+export interface PlanLoadRequest {
+    task_type: 'MRO' | 'ES';
+    date: string; // "YYYY-MM-DD"
+}
+
+/** ES schedule entry: hour + per-cell on/off (0 or 1) */
+export interface ESScheduleEntry {
+    hour: number;
+    [cellname: string]: number;
+}
+
+/** ES forecast entry: hour + per-cell load forecast (0-1) */
+export interface ESForecastEntry {
+    hour: number;
+    [cellname: string]: number;
+}
+
+export interface ESPlanData {
+    schedule: ESScheduleEntry[];
+    forecast: ESForecastEntry[];
+}
+
+/** MRO config plan entry */
+export interface MROConfigPlanEntry {
+    hour: number;
+    hom: number;
+    ttt: number;
+    predicted_hos: number;
+}
+
+export interface MROPlanData {
+    cell_names: string[];
+    config_plan: MROConfigPlanEntry[];
+}
+
+export interface PlanLoadResponse {
+    task_type: 'MRO' | 'ES';
+    date: string;
+    data: ESPlanData | MROPlanData;
+}
+
+/**
+ * Fetch plan data from the backend
+ */
+export const fetchPlanData = async (request: PlanLoadRequest): Promise<PlanLoadResponse> => {
+    const response = await fetch('http://172.16.28.63:8000/plan/load', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Failed to fetch plan data: ${response.status} ${text}`);
+    }
+
+    return await response.json();
+};

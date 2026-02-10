@@ -16,7 +16,7 @@ import {
 } from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
-import { calculateKPIDeltas } from '../services/api';
+import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse } from '../services/api';
 import { Hotspot, ExecutionOutcome, ExecutionStatus } from '../types-v2';
 import { DecisionTreeTrace } from '../types-v2';
 
@@ -45,6 +45,10 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [decisionTrace, setDecisionTrace] = useState<DecisionTreeTrace | null>(null);
   const [plannerOutput, setPlannerOutput] = useState<any>(null);
   const [executionOutcome, setExecutionOutcome] = useState<any>(null);
+
+  // Real plan data from backend
+  const [planData, setPlanData] = useState<PlanLoadResponse | null>(null);
+  const [planLoading, setPlanLoading] = useState(false);
 
   // Load cell data when date changes
   useEffect(() => {
@@ -238,7 +242,21 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
       setDecisionTrace(trace);
 
-      // Generate planner output
+      // Fetch real plan data from backend
+      setPlanLoading(true);
+      try {
+        const dateStr = formatDateForInput(selectedDate);
+        const realPlan = await fetchPlanData({ task_type: modelType, date: dateStr });
+        setPlanData(realPlan);
+        console.log(`✓ Loaded ${modelType} plan for ${dateStr}`);
+      } catch (planError) {
+        console.error('Failed to fetch plan data, falling back to mock:', planError);
+        setPlanData(null);
+      } finally {
+        setPlanLoading(false);
+      }
+
+      // Generate planner output (kept for execution outcome)
       const newPlannerOutput = getMockPlannerOutput(trace.intentId);
       setPlannerOutput(newPlannerOutput);
 
@@ -402,9 +420,20 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Panel 5: Planner Output */}
-            {plannerOutput && (
+            {selectedCell && (
               <div ref={(el) => { sectionRefs.current['planner'] = el; }} id="planner">
-                <PlannerOutputPanel planner={plannerOutput} />
+                {planLoading ? (
+                  <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
+                    <div className="flex items-center justify-center space-x-3">
+                      <Activity className="w-5 h-5 animate-pulse text-primary-600" />
+                      <span className="text-gray-600">Loading plan data from backend...</span>
+                    </div>
+                  </div>
+                ) : planData ? (
+                  <PlannerOutputPanel planResponse={planData} />
+                ) : plannerOutput ? (
+                  <PlannerOutputPanel planResponse={null} />
+                ) : null}
               </div>
             )}
 
