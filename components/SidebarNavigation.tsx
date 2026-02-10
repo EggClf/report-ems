@@ -9,8 +9,11 @@ import {
   ChevronRight,
   Menu,
   X,
-  ChevronUp
+  ChevronUp,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
 interface SidebarNavigationProps {
   activeSection: string;
@@ -44,6 +47,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onToggleExpanded
 }) => {
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -69,7 +73,7 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <>
       {/* Sidebar - Hidden on mobile by default */}
-      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#f8f0ea] shadow-lg transition-all duration-300 z-40
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#f8f0ea] dark:bg-slate-800 shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
       `} style={{ borderRightColor: '#EA7B7B', borderRightWidth: '2px' }}>
@@ -118,6 +122,26 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto">
             <div className={`space-y-1 ${!isExpanded && 'flex flex-col items-center'}`}>
+              {/* Theme Toggle */}
+              <button
+                onClick={toggleTheme}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all mb-4 ${
+                  !isExpanded && 'justify-center'
+                } bg-white/50 dark:bg-white/10 text-slate-700 dark:text-slate-300 hover:bg-white dark:hover:bg-white/20`}
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
+              >
+                {theme === 'light' ? (
+                  <Moon className="w-5 h-5 flex-shrink-0" />
+                ) : (
+                  <Sun className="w-5 h-5 flex-shrink-0" />
+                )}
+                {isExpanded && (
+                  <span className="text-sm font-medium truncate">
+                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                  </span>
+                )}
+              </button>
+
               {sections.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;

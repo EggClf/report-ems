@@ -252,7 +252,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
       {/* Sidebar Navigation */}
       <SidebarNavigation
         activeSection={activeSection}
@@ -265,7 +265,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-[#f8f0ea] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
+      <nav className="bg-[#f8f0ea] dark:bg-slate-800 px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10">
@@ -288,14 +288,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
+            <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
               <Calendar className="w-4 h-4" style={{ color: '#ee0434' }} />
               <input
                 type="date"
                 value={formatDateForInput(selectedDate)}
                 onChange={handleDateChange}
                 max={formatDateForInput(new Date())}
-                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
+                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer dark:text-slate-200"
                 style={{ color: '#9E3B3B' }}
               />
             </div>
@@ -406,7 +406,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       </div>
 
       {/* Footer */}
-      <footer className={`bg-[#f8f0ea] text-center py-4 mt-12 transition-all duration-300 ${
+      <footer className={`bg-[#f8f0ea] dark:bg-slate-800 text-center py-4 mt-12 transition-all duration-300 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
         <p className="text-xs" style={{ color: '#9E3B3B' }}>
