@@ -178,6 +178,3 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
     </div>
   );
 };
-    </div>
-  );
-};
