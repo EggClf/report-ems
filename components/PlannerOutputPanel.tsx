@@ -264,72 +264,76 @@ const MROConfigChart: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ config
     hour: `${entry.hour}`,
     HOM: entry.hom,
     TTT: entry.ttt,
-    'Predicted HOS': parseFloat(entry.predicted_hos.toFixed(4)),
   }));
 
   return (
     <div>
       <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
         <Settings className="w-4 h-4 text-purple-600" />
-        MRO Configuration Plan (24h) &mdash; HOM, TTT &amp; Predicted Handover Success
+        MRO Configuration Parameters (24h) &mdash; HOM &amp; TTT
       </h3>
-      <ResponsiveContainer width="100%" height={320}>
-        <ComposedChart data={chartData} margin={{ top: 10, right: 30, bottom: 5, left: 0 }}>
+      <ResponsiveContainer width="100%" height={280}>
+        <ComposedChart data={chartData} margin={{ top: 10, right: 50, bottom: 5, left: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis dataKey="hour" tick={{ fontSize: 11 }} label={{ value: 'Hour', position: 'insideBottom', offset: -2, fontSize: 11 }} />
-          <YAxis yAxisId="left" tick={{ fontSize: 11 }} label={{ value: 'Parameter Value', angle: -90, position: 'insideLeft', fontSize: 11 }} />
+          <YAxis
+            yAxisId="left"
+            domain={[0, 15]}
+            tick={{ fontSize: 11 }}
+            label={{ value: 'HOM (dB)', angle: -90, position: 'insideLeft', fontSize: 11, offset: 5 }}
+          />
           <YAxis
             yAxisId="right"
             orientation="right"
-            domain={[0, 1]}
+            domain={[0, 320]}
             tick={{ fontSize: 11 }}
-            label={{ value: 'HOS Rate', angle: 90, position: 'insideRight', fontSize: 11 }}
+            label={{ value: 'TTT (ms)', angle: 90, position: 'insideRight', fontSize: 11, offset: 5 }}
           />
           <Tooltip content={<CustomTooltip />} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Bar yAxisId="left" dataKey="HOM" fill="#6366f1" radius={[3, 3, 0, 0]} barSize={16} name="HOM (dB)" />
-          <Bar yAxisId="left" dataKey="TTT" fill="#f59e0b" radius={[3, 3, 0, 0]} barSize={16} name="TTT (ms)" />
-          <Line
-            yAxisId="right"
-            type="monotone"
-            dataKey="Predicted HOS"
-            stroke="#10b981"
-            strokeWidth={2.5}
-            dot={{ fill: '#10b981', r: 3 }}
-            name="Predicted HOS"
-          />
-          <ReferenceLine yAxisId="right" y={0.95} stroke="#ef4444" strokeDasharray="4 4" label={{ value: '95% target', position: 'right', fontSize: 10, fill: '#ef4444' }} />
+          <Bar yAxisId="left" dataKey="HOM" fill="#6366f1" radius={[3, 3, 0, 0]} barSize={20} name="HOM (dB)" />
+          <Bar yAxisId="right" dataKey="TTT" fill="#f59e0b" radius={[3, 3, 0, 0]} barSize={20} name="TTT (ms)" />
         </ComposedChart>
       </ResponsiveContainer>
     </div>
   );
 };
 
-const MROHOSDistribution: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ configPlan }) => {
+const MROHOSTimeSeriesChart: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ configPlan }) => {
   const chartData = configPlan.map((entry) => ({
     hour: `${entry.hour}`,
-    predicted_hos: parseFloat((entry.predicted_hos * 100).toFixed(2)),
+    'Predicted HOS': parseFloat((entry.predicted_hos * 100).toFixed(2)),
   }));
 
   return (
     <div>
       <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-        <BarChart3 className="w-4 h-4 text-emerald-600" />
-        Handover Success Rate by Hour
+        <TrendingUp className="w-4 h-4 text-emerald-600" />
+        Predicted Handover Success Rate (24h)
       </h3>
       <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+        <AreaChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 10 }}>
+          <defs>
+            <linearGradient id="hosGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
+              <stop offset="95%" stopColor="#10b981" stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-          <XAxis dataKey="hour" tick={{ fontSize: 11 }} />
-          <YAxis tick={{ fontSize: 11 }} domain={[90, 100]} label={{ value: '%', angle: -90, position: 'insideLeft', fontSize: 11 }} />
+          <XAxis dataKey="hour" tick={{ fontSize: 11 }} label={{ value: 'Hour', position: 'insideBottom', offset: -2, fontSize: 11 }} />
+          <YAxis tick={{ fontSize: 11 }} domain={[90, 100]} label={{ value: 'HOS (%)', angle: -90, position: 'insideLeft', fontSize: 11, offset: 5 }} />
           <Tooltip content={<CustomTooltip />} />
-          <ReferenceLine y={95} stroke="#ef4444" strokeDasharray="4 4" label={{ value: '95%', fontSize: 10, fill: '#ef4444' }} />
-          <Bar dataKey="predicted_hos" name="HOS (%)" radius={[3, 3, 0, 0]}>
-            {chartData.map((entry, idx) => (
-              <Cell key={idx} fill={entry.predicted_hos >= 95 ? '#10b981' : '#f59e0b'} />
-            ))}
-          </Bar>
-        </BarChart>
+          <ReferenceLine y={95} stroke="#ef4444" strokeDasharray="4 4" label={{ value: '95% target', fontSize: 10, fill: '#ef4444', position: 'right' }} />
+          <Area
+            type="monotone"
+            dataKey="Predicted HOS"
+            stroke="#10b981"
+            strokeWidth={2.5}
+            fill="url(#hosGradient)"
+            dot={{ fill: '#10b981', r: 3 }}
+            name="HOS (%)"
+          />
+        </AreaChart>
       </ResponsiveContainer>
     </div>
   );
@@ -554,7 +558,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
               {activeTab === 'overview' && (
                 <>
                   <MROConfigChart configPlan={mroData.config_plan} />
-                  <MROHOSDistribution configPlan={mroData.config_plan} />
+                  <MROHOSTimeSeriesChart configPlan={mroData.config_plan} />
                 </>
               )}
 

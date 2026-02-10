@@ -55,6 +55,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
     loadCellData(selectedDate);
   }, [selectedDate]);
 
+  // Auto-load plan data when date or task type changes
+  useEffect(() => {
+    loadPlanData(selectedDate, selectedModelType);
+  }, [selectedDate, selectedModelType]);
+
   // Load cell data from network scan API
   const loadCellData = async (date: Date) => {
     setCellsLoading(true);
@@ -71,6 +76,22 @@ export const LoopMonitoringDashboard: React.FC = () => {
       console.error('Failed to load cell data:', error);
     } finally {
       setCellsLoading(false);
+    }
+  };
+
+  // Load plan data from backend
+  const loadPlanData = async (date: Date, taskType: 'ES' | 'MRO') => {
+    setPlanLoading(true);
+    try {
+      const dateStr = formatDateForInput(date);
+      const realPlan = await fetchPlanData({ task_type: taskType, date: dateStr });
+      setPlanData(realPlan);
+      console.log(`✓ Loaded ${taskType} plan for ${dateStr}`);
+    } catch (error) {
+      console.error(`Failed to fetch ${taskType} plan data:`, error);
+      setPlanData(null);
+    } finally {
+      setPlanLoading(false);
     }
   };
 
@@ -242,18 +263,10 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
       setDecisionTrace(trace);
 
-      // Fetch real plan data from backend
-      setPlanLoading(true);
-      try {
-        const dateStr = formatDateForInput(selectedDate);
-        const realPlan = await fetchPlanData({ task_type: modelType, date: dateStr });
-        setPlanData(realPlan);
-        console.log(`✓ Loaded ${modelType} plan for ${dateStr}`);
-      } catch (planError) {
-        console.error('Failed to fetch plan data, falling back to mock:', planError);
-        setPlanData(null);
-      } finally {
-        setPlanLoading(false);
+      // Update task type to match cell prediction
+      if (modelType !== selectedModelType) {
+        setSelectedModelType(modelType);
+        // Plan will auto-reload via useEffect
       }
 
       // Generate planner output (kept for execution outcome)
@@ -329,6 +342,32 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
                 style={{ color: '#9E3B3B' }}
               />
+            </div>
+
+            {/* Task Type Toggle */}
+            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
+              <button
+                onClick={() => setSelectedModelType('ES')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                  selectedModelType === 'ES'
+                    ? 'bg-green-500 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+                title="Energy Saving"
+              >
+                ES
+              </button>
+              <button
+                onClick={() => setSelectedModelType('MRO')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                  selectedModelType === 'MRO'
+                    ? 'bg-purple-500 text-white'
+                    : 'text-slate-600 hover:bg-slate-100'
+                }`}
+                title="Mobility Robustness Optimization"
+              >
+                MRO
+              </button>
             </div>
 
             {/* Loop Status Indicator */}
@@ -419,29 +458,41 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               )}
             </div>
 
-            {/* Panel 5: Planner Output */}
-            {selectedCell && (
-              <div ref={(el) => { sectionRefs.current['planner'] = el; }} id="planner">
-                {planLoading ? (
-                  <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
-                    <div className="flex items-center justify-center space-x-3">
-                      <Activity className="w-5 h-5 animate-pulse text-primary-600" />
-                      <span className="text-gray-600">Loading plan data from backend...</span>
-                    </div>
+            {/* Panel 5: Action Planner - Auto-loaded by date & task type */}
+            <div ref={(el) => { sectionRefs.current['planner'] = el; }} id="planner">
+              {planLoading ? (
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
+                  <div className="flex items-center justify-center space-x-3">
+                    <Activity className="w-5 h-5 animate-pulse text-primary-600" />
+                    <span className="text-gray-600">Loading {selectedModelType} plan data from backend...</span>
                   </div>
-                ) : planData ? (
-                  <PlannerOutputPanel planResponse={planData} />
-                ) : plannerOutput ? (
-                  <PlannerOutputPanel planResponse={null} />
-                ) : null}
-              </div>
-            )}
+                </div>
+              ) : planData ? (
+                <PlannerOutputPanel planResponse={planData} />
+              ) : (
+                <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
+                  <div className="text-center text-gray-500">
+                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Plan Data Available</h3>
+                    <p className="text-sm">Could not load plan data for the selected date. Please check the backend or try another date.</p>
+                  </div>
+                </div>
+              )}
+            </div>
 
-            {/* Panel 6: Execution & Outcome */}
-            {executionOutcome && (
-              <div ref={(el) => { sectionRefs.current['execution'] = el; }} id="execution">
-                <ExecutionOutcomePanel outcome={executionOutcome} />
-              </div>
+            {/* Panel 6: Execution & Outcome - Only shown after cell selection */}
+            {selectedCell && executionOutcome && (
+              <>
+                <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
+                  <div className="text-sm font-semibold text-amber-800">
+                    📊 Execution outcome for Cell: <span className="font-mono">{selectedCell.cellname}</span>
+                    {' '}(NE: {selectedCell.ne_name}) • Task: {selectedModelType}
+                  </div>
+                </div>
+                <div ref={(el) => { sectionRefs.current['execution'] = el; }} id="execution">
+                  <ExecutionOutcomePanel outcome={executionOutcome} />
+                </div>
+              </>
             )}
           </div>
         </div>
