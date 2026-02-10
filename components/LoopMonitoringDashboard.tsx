@@ -259,17 +259,17 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-slate-900 text-white px-6 py-4 shadow-lg sticky top-0 z-50">
+      <nav className="bg-gradient-to-r from-primary-900 via-primary-800 to-red-900 text-white px-6 py-4 shadow-lg sticky top-0 z-50 border-b-2 border-primary-600">
         <div className="max-w-[1920px] mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary-600 rounded-lg">
-              <Network className="w-5 h-5 text-white" />
+            <div className="flex items-center justify-center w-10 h-10">
+              <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">
                 VULCAN
               </h1>
-              <p className="text-[10px] text-slate-400 uppercase tracking-wider">
+              <p className="text-[10px] text-red-100/70 uppercase tracking-wider">
                 Viettel Unified Logic and Control for Autonomous Network
               </p>
             </div>
@@ -277,31 +277,31 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
           <div className="flex items-center gap-4">
             {/* Last Update */}
-            <div className="text-xs text-slate-400">
+            <div className="text-xs text-red-100/60">
               Last updated: {lastUpdate.toLocaleTimeString()}
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700">
-              <Calendar className="w-4 h-4 text-primary-400" />
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
+              <Calendar className="w-4 h-4 text-red-100" />
               <input
                 type="date"
                 value={selectedDate.toISOString().split('T')[0]}
                 onChange={handleDateChange}
                 max={new Date().toISOString().split('T')[0]}
-                className="bg-transparent text-sm font-medium text-slate-200 border-none outline-none cursor-pointer"
+                className="bg-transparent text-sm font-medium text-white border-none outline-none cursor-pointer"
                 style={{ colorScheme: 'dark' }}
               />
             </div>
 
             {/* Loop Status Indicator */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-slate-800 rounded-lg border border-slate-700">
+            <div className="flex items-center gap-2 px-3 py-2 bg-white/10 rounded-lg border border-white/20 backdrop-blur-sm">
               <Activity className={`w-4 h-4 ${
-                overviewData.loopStatus === 'running' ? 'text-green-500 animate-pulse' :
-                overviewData.loopStatus === 'degraded' ? 'text-yellow-500' :
-                'text-gray-500'
+                overviewData.loopStatus === 'running' ? 'text-green-400 animate-pulse' :
+                overviewData.loopStatus === 'degraded' ? 'text-yellow-400' :
+                'text-gray-400'
               }`} />
-              <span className="text-sm font-medium capitalize">{overviewData.loopStatus}</span>
+              <span className="text-sm font-medium capitalize text-white">{overviewData.loopStatus}</span>
             </div>
           </div>
         </div>
@@ -400,7 +400,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       </div>
 
       {/* Footer */}
-      <footer className={`bg-slate-900 text-slate-400 text-center py-4 mt-12 transition-all duration-300 ${
+      <footer className={`bg-gradient-to-r from-primary-900 via-primary-800 to-red-900 text-red-100/70 text-center py-4 mt-12 transition-all duration-300 border-t-2 border-primary-600 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
       }`}>
         <p className="text-xs">
