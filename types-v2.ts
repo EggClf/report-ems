@@ -8,11 +8,11 @@ export type ExecutionStatus = 'sent' | 'ack' | 'applied' | 'failed' | 'rollback'
 
 export interface OverviewData {
   loopStatus: LoopStatus;
-  dataFreshness: {
+  dataFreshness?: {
     snapshotAge: number; // seconds
     featureCoverage: number; // percentage
   };
-  activeIntents: {
+  activeIntents?: {
     region: string;
     count: number;
     priority: Priority;
@@ -141,11 +141,11 @@ export interface ExecutionOutcome {
   intentId: string;
   logs: ExecutionLog[];
   kpiDeltas: KPIDelta[];
-  attribution: {
+  attribution?: {
     success: boolean;
     correlationScore: number;
   };
-  rateLimiting: {
+  rateLimiting?: {
     cooldownMinutes: number;
     actionsRemainingInWindow: number;
   };

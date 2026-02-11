@@ -175,60 +175,21 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
         </div>
       )}
 
-      {/* Attribution */}
+      {/* Attribution Analysis - Under Development */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-3">Attribution Analysis</h3>
-        <div className={`border-2 rounded-lg p-4 ${
-          outcome.attribution.success
-            ? 'border-green-300 bg-green-50'
-            : 'border-orange-300 bg-orange-50'
-        }`}>
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              {outcome.attribution.success ? (
-                <CheckCircle className="w-5 h-5 text-green-600" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-orange-600" />
-              )}
-              <span className="font-semibold text-slate-800">
-                Attribution: {outcome.attribution.success ? 'Successful' : 'Uncertain'}
-              </span>
-            </div>
-            <div className="text-sm">
-              <span className="text-slate-600">Correlation Score:</span>
-              <span className="ml-2 font-bold text-slate-800">
-                {(outcome.attribution.correlationScore * 100).toFixed(1)}%
-              </span>
-            </div>
-          </div>
-          <div className="text-xs text-slate-700 mt-2">
-            {outcome.attribution.success
-              ? 'KPI improvements are strongly correlated with the executed action.'
-              : 'KPI changes may be influenced by external factors. Further monitoring recommended.'}
-          </div>
+        <div className="flex flex-col items-center justify-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+          <Target className="w-8 h-8 mb-2 opacity-20 text-slate-400" />
+          <p className="text-sm font-medium">This feature is under development and will be available soon.</p>
         </div>
       </div>
 
-      {/* Rate Limiting */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-start gap-3">
-          <Clock className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div className="flex-1">
-            <div className="font-semibold text-sm text-slate-800 mb-1">Rate Limiting & Cooldown</div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <span className="text-slate-600">Cooldown Period:</span>
-                <span className="ml-2 font-semibold text-slate-800">{outcome.rateLimiting.cooldownMinutes} minutes</span>
-              </div>
-              <div>
-                <span className="text-slate-600">Actions Remaining:</span>
-                <span className="ml-2 font-semibold text-slate-800">{outcome.rateLimiting.actionsRemainingInWindow}</span>
-              </div>
-            </div>
-            <div className="text-xs text-blue-700 mt-2">
-              This prevents excessive parameter changes and ensures network stability.
-            </div>
-          </div>
+      {/* Rate Limiting - Under Development */}
+      <div className="p-4 bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg">
+        <div className="flex flex-col items-center justify-center py-4 text-slate-500">
+          <Clock className="w-8 h-8 mb-2 opacity-20 text-slate-400" />
+          <p className="text-sm font-medium">Rate Limiting & Cooldown</p>
+          <p className="text-xs text-slate-400 mt-1">This feature is under development and will be available soon.</p>
         </div>
       </div>
     </div>

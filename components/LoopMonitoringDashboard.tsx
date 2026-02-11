@@ -10,9 +10,7 @@ import { IntentLegend } from './IntentLegend';
 import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
 import {
-  getMockOverviewData,
   getMockPlannerOutput,
-  getMockExecutionOutcome
 } from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
@@ -33,8 +31,14 @@ export const LoopMonitoringDashboard: React.FC = () => {
   // Refs for scroll tracking
   const sectionRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
-  // Load mock data for overview/hotspots
-  const [overviewData, setOverviewData] = useState(() => getMockOverviewData());
+  // Overview data
+  const [overviewData, setOverviewData] = useState<{
+    loopStatus: 'running' | 'degraded' | 'paused';
+    alerts: any[];
+  }>({
+    loopStatus: 'running',
+    alerts: []
+  });
   const [hotspots, setHotspots] = useState<Hotspot[]>([]);
 
   // Real cell data from network scan
@@ -243,23 +247,9 @@ export const LoopMonitoringDashboard: React.FC = () => {
       );
     } catch (error) {
       console.error('Failed to calculate KPI deltas:', error);
-      // Fallback to mock if API fails
-      return getMockExecutionOutcome(planId, intentId);
+      // Return empty KPI deltas if API fails
+      kpiDeltas = [];
     }
-
-    // Calculate correlation score based on KPI improvements
-    const improvements = kpiDeltas.filter((kpi) => {
-      const isPositive = kpi.deltaPercent > 0;
-      // Define improvement criteria per metric
-      if (kpi.metric.includes('Throughput') || kpi.metric.includes('SR')) {
-        return isPositive; // Higher is better
-      } else if (kpi.metric.includes('CDR') || kpi.metric.includes('PRB') || kpi.metric.includes('Power')) {
-        return !isPositive; // Lower is better
-      }
-      return isPositive;
-    });
-
-    const correlationScore = kpiDeltas.length > 0 ? improvements.length / kpiDeltas.length : 0;
 
     return {
       executionId,
@@ -292,14 +282,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
         },
       ],
       kpiDeltas,
-      attribution: {
-        success: correlationScore > 0.6,
-        correlationScore,
-      },
-      rateLimiting: {
-        cooldownMinutes: 30,
-        actionsRemainingInWindow: 5,
-      },
     };
   };
 const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {

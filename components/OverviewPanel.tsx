@@ -1,5 +1,5 @@
 import React from 'react';
-import { Activity, AlertTriangle, CheckCircle, Pause, Clock, Layers } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, Pause } from 'lucide-react';
 import { OverviewData, LoopStatus, AlertType, Priority } from '../types-v2';
 
 interface OverviewPanelProps {
@@ -46,18 +46,6 @@ const getAlertIcon = (type: AlertType) => {
 };
 
 export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
-  const getDataFreshnessStatus = () => {
-    if (data.dataFreshness.snapshotAge < 30 && data.dataFreshness.featureCoverage > 95) {
-      return { color: 'text-green-600', status: 'Excellent' };
-    } else if (data.dataFreshness.snapshotAge < 60 && data.dataFreshness.featureCoverage > 90) {
-      return { color: 'text-yellow-600', status: 'Good' };
-    } else {
-      return { color: 'text-red-600', status: 'Attention Needed' };
-    }
-  };
-
-  const freshnessStatus = getDataFreshnessStatus();
-
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
       <h2 className="text-xl font-bold text-[#241D1E] mb-4 flex items-center gap-2">
@@ -65,7 +53,7 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
         Loop Status Overview
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         {/* Loop Status */}
         <div className="border border-gray-100 rounded-xl p-4 bg-gray-50">
           <div className="text-sm text-gray-500 mb-2">Loop Status</div>
@@ -73,37 +61,6 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
             {getStatusIcon(data.loopStatus)}
             <span className="capitalize">{data.loopStatus}</span>
           </div>
-        </div>
-
-        {/* Data Freshness */}
-        <div className="border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-slate-600 mb-2 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            Data Freshness
-          </div>
-          <div className="space-y-1">
-            <div className="text-sm">
-              Snapshot: <span className="font-semibold">{data.dataFreshness.snapshotAge}s ago</span>
-            </div>
-            <div className="text-sm">
-              Coverage: <span className="font-semibold">{data.dataFreshness.featureCoverage.toFixed(1)}%</span>
-            </div>
-            <div className={`text-xs font-medium ${freshnessStatus.color}`}>
-              {freshnessStatus.status}
-            </div>
-          </div>
-        </div>
-
-        {/* Total Active Intents */}
-        <div className="border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-slate-600 mb-2 flex items-center gap-1">
-            <Layers className="w-3 h-3" />
-            Active Intents
-          </div>
-          <div className="text-3xl font-bold text-primary-600">
-            {data.activeIntents.reduce((sum, region) => sum + region.count, 0)}
-          </div>
-          <div className="text-xs text-slate-500 mt-1">Across all regions</div>
         </div>
 
         {/* Alerts Count */}
@@ -116,23 +73,6 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
             {data.alerts.length}
           </div>
           <div className="text-xs text-slate-500 mt-1">Requiring attention</div>
-        </div>
-      </div>
-
-      {/* Active Intents by Region */}
-      <div className="mb-6">
-        <h3 className="text-sm font-semibold text-slate-700 mb-3">Active Intents by Region & Priority</h3>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {data.activeIntents.map((region) => (
-            <div
-              key={region.region}
-              className={`border rounded-lg p-3 ${getPriorityColor(region.priority)}`}
-            >
-              <div className="text-xs font-medium uppercase mb-1">{region.region}</div>
-              <div className="text-2xl font-bold">{region.count}</div>
-              <div className="text-xs capitalize mt-1">{region.priority} priority</div>
-            </div>
-          ))}
         </div>
       </div>
 
