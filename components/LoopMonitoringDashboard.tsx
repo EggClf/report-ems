@@ -344,8 +344,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onNavigate={handleNavigate}
         loopStatus={overviewData.loopStatus}
         alertCount={alarmData.length}
-        intentCount={cells.length}
-        hotspotCount={hotspots.length}
         isExpanded={sidebarExpanded}
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
@@ -435,8 +433,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         <QuickStatsBar
           loopStatus={overviewData.loopStatus}
           alertCount={alarmData.length}
-          intentCount={cells.length}
-          hotspotCount={hotspots.length}
           onNavigate={handleNavigate}
         />
       </div>
@@ -552,7 +548,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       }`} style={{ borderTopColor: '#EE0434', borderTopWidth: '3px' }}>
         <p className="text-base" style={{ color: '#FFE6EC' }}>
           VULCAN - <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
-          {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
       </footer>
     </div>

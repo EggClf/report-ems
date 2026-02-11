@@ -17,8 +17,6 @@ interface SidebarNavigationProps {
   onNavigate: (sectionId: string) => void;
   loopStatus: 'running' | 'degraded' | 'paused';
   alertCount: number;
-  intentCount: number;
-  hotspotCount: number;
   isExpanded: boolean;
   onToggleExpanded: () => void;
 }
@@ -38,8 +36,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   onNavigate,
   loopStatus,
   alertCount,
-  intentCount,
-  hotspotCount,
   isExpanded,
   onToggleExpanded
 }) => {
@@ -97,16 +93,6 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400">Alerts</span>
                   <span className="text-xs font-bold text-white">{alertCount}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400">Intents</span>
-                  <span className="text-xs font-bold text-white">{intentCount}</span>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400">Hotspots</span>
-                  <span className="text-xs font-bold text-white">{hotspotCount}</span>
                 </div>
               </div>
             </div>
