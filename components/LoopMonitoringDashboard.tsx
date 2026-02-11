@@ -371,7 +371,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       <nav className="shadow-md sticky top-0 z-50 border-b-3 overflow-hidden bg-[#44494D]" style={{ borderBottomColor: '#EE0434', borderBottomWidth: '3px' }}>
         <div className="max-w-[1920px] mx-auto flex items-stretch min-h-[100px]">
           {/* Left Section - Red with Diagonal Cut */}
-          <div className="relative bg-[#C0042B] px-8 py-6 flex items-center" style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 50px) 100%, 0 100%)' }}>
+          <div className="relative bg-[#EE0434] px-8 py-6 flex items-center" style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 50px) 100%, 0 100%)' }}>
             <div className="flex items-center gap-3 pr-12">
               <div className="flex items-center justify-center w-10 h-10">
                 <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
