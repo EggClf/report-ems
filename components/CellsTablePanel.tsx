@@ -105,8 +105,8 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
       </div>
 
       {/* Info Banner */}
-      <div className="mb-4 p-3 bg-primary-50 border border-primary-200 rounded-lg">
-        <div className="text-sm text-primary-800">
+      <div className="mb-4 p-3 bg-primary-600 border border-primary-500 rounded-lg">
+        <div className="text-sm text-white">
           <strong>Instructions:</strong> Click on any cell to run {selectedModelType} model prediction
           and view the decision tree trace with feature importance analysis.
         </div>

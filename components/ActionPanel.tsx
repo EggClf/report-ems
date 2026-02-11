@@ -18,7 +18,7 @@ export const ActionPanel: React.FC<Props> = ({ action }) => {
         {action.profile && (
           <div className="flex justify-between items-center border-b border-slate-200 pb-2">
             <span className="text-xs text-slate-500 uppercase tracking-wide">Profile</span>
-            <span className="text-sm font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded">
+            <span className="text-sm font-medium text-white bg-primary-600 px-2 py-0.5 rounded">
               {action.profile}
             </span>
           </div>

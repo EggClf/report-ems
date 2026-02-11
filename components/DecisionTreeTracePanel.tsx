@@ -467,19 +467,19 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
 
       {activeTab === 'explanation' ? (
         <>
-          <div className="mb-6 p-4 bg-primary-50 border-l-4 border-primary-600 rounded">
+          <div className="mb-6 p-4 bg-primary-600 border-l-4 border-white/20 rounded">
         <div className="flex items-center gap-3 mb-2">
           {finalDecision ? (
-            <CheckCircle className="w-8 h-8 text-green-600" />
+            <CheckCircle className="w-8 h-8 text-white" />
           ) : (
-            <XCircle className="w-8 h-8 text-red-600" />
+            <XCircle className="w-8 h-8 text-white" />
           )}
           <div>
-            <div className="text-sm text-slate-600 font-medium">Final Decision</div>
-            <div className="text-2xl font-bold text-primary-700">{finalActionLabel}</div>
+            <div className="text-sm text-white font-medium">Final Decision</div>
+            <div className="text-2xl font-bold text-white">{finalActionLabel}</div>
           </div>
         </div>
-        <div className="text-sm text-slate-700 mt-2">
+        <div className="text-sm text-white mt-2">
           The decision tree analyzed <strong>{impactfulNarratives.length} key factors</strong> with significant impact to reach this conclusion.
         </div>
       </div>
@@ -519,7 +519,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
                     </div>
                     <button
                       onClick={() => toggleNodeExpansion(narrative.stepNumber)}
-                      className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"
+                      className="flex items-center gap-1 px-2 py-1 text-xs text-slate-600 hover:text-white hover:bg-primary-600 rounded transition-colors"
                       aria-label="Toggle details"
                     >
                       <Info className="w-4 h-4" />
@@ -611,16 +611,16 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
       ) : (
         /* Details Tab - Tree Visualization */
         <div className="space-y-6">
-          <div className="mb-4 p-4 bg-primary-50 border-l-4 border-primary-600 rounded">
+          <div className="mb-4 p-4 bg-primary-600 border-l-4 border-white/20 rounded">
             <div className="flex items-center gap-3 mb-2">
               {finalDecision ? (
-                <CheckCircle className="w-8 h-8 text-green-600" />
+                <CheckCircle className="w-8 h-8 text-white" />
               ) : (
-                <XCircle className="w-8 h-8 text-red-600" />
+                <XCircle className="w-8 h-8 text-white" />
               )}
               <div>
-                <div className="text-sm text-slate-600 font-medium">Final Decision</div>
-                <div className="text-2xl font-bold text-primary-700">{finalActionLabel}</div>
+                <div className="text-sm text-white font-medium">Final Decision</div>
+                <div className="text-2xl font-bold text-white">{finalActionLabel}</div>
               </div>
             </div>
           </div>

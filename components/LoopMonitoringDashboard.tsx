@@ -490,8 +490,8 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
             {/* Detailed Analysis Section */}
             {selectedCell && (
-            <div className="p-4 bg-primary-50 border-2 border-primary-300 rounded-lg">
-              <div className="text-sm font-semibold text-primary-800">
+            <div className="p-4 bg-primary-600 border-2 border-primary-500 rounded-lg">
+              <div className="text-sm font-semibold text-white">
                 📍 Viewing {selectedModelType} analysis for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                 {' '}(NE: {selectedCell.ne_name})
               </div>
