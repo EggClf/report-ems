@@ -388,7 +388,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Task Type Toggle */}
-            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
+            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#94a3b8', borderWidth: '1px' }}>
               <button
                 onClick={() => setSelectedModelType('ES')}
                 className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
@@ -404,7 +404,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 onClick={() => setSelectedModelType('MRO')}
                 className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
                   selectedModelType === 'MRO'
-                    ? 'bg-purple-500 text-white'
+                    ? 'bg-blue-500 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
                 }`}
                 title="Mobility Robustness Optimization"
@@ -472,7 +472,11 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
             {/* Detailed Analysis Section */}
             {selectedCell && (
-            <div className="p-4 bg-primary-600 border-2 border-primary-500 rounded-lg">
+            <div className={`p-4 border-2 rounded-lg ${
+              selectedModelType === 'ES'
+                ? 'bg-green-500 border-green-600'
+                : 'bg-blue-500 border-blue-600'
+            }`}>
               <div className="text-base font-semibold text-white">
                 📍 Viewing {selectedModelType} analysis for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                 {' '}(NE: {selectedCell.ne_name})
@@ -527,8 +531,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             {/* Panel 6: Execution & Outcome - Only shown after cell selection */}
             {selectedCell && executionOutcome && (
               <>
-                <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
-                  <div className="text-base font-semibold text-amber-800">
+                <div className={`p-4 border-2 rounded-lg ${
+                  selectedModelType === 'ES'
+                    ? 'bg-green-50 border-green-300'
+                    : 'bg-blue-50 border-blue-300'
+                }`}>
+                  <div className={`text-base font-semibold ${
+                    selectedModelType === 'ES' ? 'text-green-800' : 'text-blue-800'
+                  }`}>
                     📊 Execution outcome for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                     {' '}(NE: {selectedCell.ne_name}) • Task: {selectedModelType}
                   </div>

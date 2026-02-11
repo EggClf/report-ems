@@ -84,7 +84,7 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
             onClick={() => setSelectedModelType('MRO')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               selectedModelType === 'MRO'
-                ? 'bg-purple-600 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             }`}
           >

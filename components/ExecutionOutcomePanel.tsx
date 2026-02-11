@@ -37,78 +37,32 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
   const isFailed = lastLog.status === 'failed' || lastLog.status === 'rollback';
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
       <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <Play className="w-6 h-6 text-[#EE0434]" />
+        <Play className="w-6 h-6 text-blue-600" />
         Execution & Outcome Analysis
       </h2>
 
-      {/* Execution Metadata */}
-      <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-slate-50 rounded-lg border border-red-100">
-        <div>
-          <div className="text-xs text-slate-600 mb-1">Execution ID</div>
-          <div className="text-sm font-mono font-semibold text-slate-800">{outcome.executionId}</div>
-        </div>
-        <div>
-          <div className="text-xs text-slate-600 mb-1">Plan ID</div>
-          <div className="text-sm font-mono font-semibold text-slate-800">{outcome.planId}</div>
-        </div>
-        <div>
-          <div className="text-xs text-slate-600 mb-1">Intent ID</div>
-          <div className="text-sm font-mono font-semibold text-slate-800">{outcome.intentId}</div>
+      {/* Execution Metadata - Under Development */}
+      <div className="mb-6">
+        <h3 className="text-sm font-semibold text-slate-700 mb-3">Execution Metadata</h3>
+        <div className="flex flex-col items-center justify-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+          <Play className="w-8 h-8 mb-2 opacity-20 text-slate-400" />
+          <p className="text-sm font-medium">This feature is under development and will be available soon.</p>
         </div>
       </div>
 
-      {/* Execution Timeline */}
+      {/* Execution Timeline - Under Development */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
           <Clock className="w-4 h-4" />
           Execution Timeline
         </h3>
-        <div className="relative">
-          {/* Timeline line */}
-          <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-slate-200"></div>
-
-          <div className="space-y-3">
-            {outcome.logs.map((log, idx) => (
-              <div key={idx} className="relative flex items-start gap-4">
-                {/* Timeline dot */}
-                <div className={`relative z-10 flex items-center justify-center w-12 h-12 rounded-full border-4 border-white ${
-                  log.status === 'applied' ? 'bg-green-500' :
-                  log.status === 'failed' || log.status === 'rollback' ? 'bg-red-500' :
-                  log.status === 'ack' ? 'bg-purple-500' :
-                  'bg-blue-500'
-                }`}>
-                  <div className="text-white">
-                    {getStatusIcon(log.status)}
-                  </div>
-                </div>
-
-                {/* Log content */}
-                <div className={`flex-1 border-2 rounded-lg p-3 ${getStatusColor(log.status)}`}>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-semibold text-sm capitalize mb-1">
-                        {log.status.replace(/_/g, ' ')}
-                      </div>
-                      <div className="text-xs text-slate-700 mb-1">
-                        Target: <span className="font-mono font-semibold">{log.targetCell}</span>
-                      </div>
-                      {log.errorReason && (
-                        <div className="text-xs text-red-700 mt-2 font-medium">
-                          Error: {log.errorReason}
-                        </div>
-                      )}
-                    </div>
-                    <div className="text-xs text-slate-600">
-                      {new Date(log.timestamp).toLocaleTimeString()}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="flex flex-col items-center justify-center py-8 text-slate-500 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+          <Clock className="w-8 h-8 mb-2 opacity-20 text-slate-400" />
+          <p className="text-sm font-medium">This feature is under development and will be available soon.</p>
         </div>
+
       </div>
 
       {/* KPI Deltas */}

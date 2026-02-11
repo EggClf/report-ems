@@ -7,7 +7,7 @@ export const IntentLegend: React.FC = () => {
       label: 'MRO',
       name: 'Mobility Robustness Optimization',
       description: 'Optimizes handover parameters to reduce failures and improve mobility performance',
-      color: 'bg-purple-100 text-purple-700 border-purple-300'
+      color: 'bg-blue-100 text-blue-700 border-blue-300'
     },
     {
       label: 'ES',
@@ -30,9 +30,9 @@ export const IntentLegend: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
       <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-        <Info className="w-5 h-5 text-[#EE0434]" />
+        <Info className="w-5 h-5 text-blue-600" />
         Intent Classification Reference
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
