@@ -59,16 +59,16 @@ export const OverviewPanel: React.FC<OverviewPanelProps> = ({ data }) => {
   const freshnessStatus = getDataFreshnessStatus();
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
-      <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2">
-        <Activity className="w-6 h-6 text-primary-600" />
+    <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+      <h2 className="text-xl font-bold text-[#241D1E] mb-4 flex items-center gap-2">
+        <Activity className="w-6 h-6 text-[#EE0033]" />
         Loop Status Overview
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Loop Status */}
-        <div className="border border-slate-200 rounded-lg p-4">
-          <div className="text-sm text-slate-600 mb-2">Loop Status</div>
+        <div className="border border-gray-100 rounded-xl p-4 bg-gray-50">
+          <div className="text-sm text-gray-500 mb-2">Loop Status</div>
           <div className={`flex items-center gap-2 font-semibold text-lg px-3 py-2 rounded-md ${getStatusColor(data.loopStatus)}`}>
             {getStatusIcon(data.loopStatus)}
             <span className="capitalize">{data.loopStatus}</span>

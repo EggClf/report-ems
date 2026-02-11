@@ -25,71 +25,61 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
   };
 
   return (
-    <div className="bg-[#fdf9f8] shadow-sm" style={{ backgroundColor: 'var(--stats-bg, #fdf9f8)', borderBottomColor: 'var(--stats-border, #EA7B7B)', borderBottomWidth: '1px' }}>
-      <style>{`.dark { --stats-bg: #5D0E41; --stats-border: #A0153E; }`}</style>
-      <div className="max-w-[1920px] mx-auto px-6 py-3">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div className="bg-white shadow-sm border-b border-gray-100">
+      <div className="max-w-[1920px] mx-auto px-6 py-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {/* Loop Status */}
           <button
             onClick={() => onNavigate('overview')}
-            className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f0ea'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
-            <div className={`w-3 h-3 rounded-full ${getStatusColor()} animate-pulse`}></div>
-            <div>
-              <div className="text-xs text-slate-500 uppercase">Loop</div>
-              <div className="text-sm font-semibold text-slate-800 capitalize">{loopStatus}</div>
+            <div className={`w-3 h-3 rounded-full ${getStatusColor()} animate-pulse shadow-sm`}></div>
+            <div className="text-left">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Loop Status</div>
+              <div className="text-base font-bold text-[#44494D] capitalize">{loopStatus}</div>
             </div>
-            <Activity className="w-4 h-4 text-slate-400 ml-auto" style={{ transition: 'color 0.2s' }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#ee0434'}
-              onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
-            />
+            <Activity className="w-5 h-5 text-gray-300 ml-auto group-hover:text-[#EE0033] transition-colors" />
           </button>
 
           {/* Alerts */}
           <button
             onClick={() => onNavigate('overview')}
-            className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f0ea'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
-            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-              <AlertCircle className="w-5 h-5 text-red-600" />
+            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-[#EE0033] group-hover:text-white transition-colors">
+              <AlertCircle className="w-6 h-6 text-[#EE0033] group-hover:text-white" />
             </div>
-            <div>
-              <div className="text-xs text-slate-500 uppercase">Alerts</div>
-              <div className="text-sm font-semibold text-red-600">{alertCount}</div>
+            <div className="text-left">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Active Alerts</div>
+              <div className="text-2xl font-bold text-[#44494D] group-hover:text-[#EE0033] transition-colors">{alertCount}</div>
             </div>
           </button>
 
           {/* Hotspots */}
           <button
             onClick={() => onNavigate('hotspots')}
-            className="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 transition-colors group"
+            className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-              <MapPin className="w-5 h-5 text-orange-600" />
+            <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center">
+              <MapPin className="w-6 h-6 text-orange-500" />
             </div>
-            <div>
-              <div className="text-xs text-slate-500 uppercase">Hotspots</div>
-              <div className="text-sm font-semibold text-orange-600">{hotspotCount}</div>
+            <div className="text-left">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Hotspots</div>
+              <div className="text-2xl font-bold text-[#44494D]">{hotspotCount}</div>
             </div>
           </button>
 
           {/* Intents */}
           <button
             onClick={() => onNavigate('intents')}
-            className="flex items-center gap-3 p-2 rounded-lg transition-colors group"
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f0ea'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+            className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: '#f8f0ea' }}>
-              <Brain className="w-5 h-5" style={{ color: '#ee0434' }} />
+            <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+              <Brain className="w-6 h-6 text-blue-500" />
             </div>
-            <div>
-              <div className="text-xs text-slate-500 uppercase">Intents</div>
-              <div className="text-sm font-semibold" style={{ color: '#ee0434' }}>{intentCount}</div>
+            <div className="text-left">
+              <div className="text-xs text-gray-500 uppercase tracking-wide font-medium">Active Intents</div>
+              <div className="text-2xl font-bold text-[#44494D]">{intentCount}</div>
             </div>
           </button>
         </div>

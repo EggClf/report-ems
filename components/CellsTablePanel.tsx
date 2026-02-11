@@ -49,10 +49,10 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
 
   if (loading) {
     return (
-      <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
+      <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <Activity className="w-8 h-8 animate-spin text-primary-600 mx-auto mb-2" />
+            <Activity className="w-8 h-8 animate-spin text-[#EE0434] mx-auto mb-2" />
             <p className="text-gray-600">Loading cell data...</p>
           </div>
         </div>
@@ -61,10 +61,10 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
   }
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6">
+    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-          <Server className="w-6 h-6 text-primary-600" />
+        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+          <Server className="w-6 h-6 text-[#EE0434]" />
           Network Cells ({cells.length})
         </h2>
 

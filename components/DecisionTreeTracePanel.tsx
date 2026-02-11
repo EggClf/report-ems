@@ -426,10 +426,9 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
   };
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
-      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
-      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-        <BookOpen className="w-6 h-6 text-primary-600" />
+    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <BookOpen className="w-6 h-6 text-[#EE0434]" />
         Decision Explanation: Why {finalActionLabel}?
       </h2>
 

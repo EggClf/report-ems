@@ -37,15 +37,14 @@ export const ExecutionOutcomePanel: React.FC<ExecutionOutcomePanelProps> = ({ ou
   const isFailed = lastLog.status === 'failed' || lastLog.status === 'rollback';
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
-      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
-      <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-        <Play className="w-6 h-6 text-primary-600" />
+    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <Play className="w-6 h-6 text-[#EE0434]" />
         Execution & Outcome Analysis
       </h2>
 
       {/* Execution Metadata */}
-      <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+      <div className="grid grid-cols-3 gap-4 mb-6 p-4 bg-slate-50 rounded-lg border border-red-100">
         <div>
           <div className="text-xs text-slate-600 mb-1">Execution ID</div>
           <div className="text-sm font-mono font-semibold text-slate-800">{outcome.executionId}</div>

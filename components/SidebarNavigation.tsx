@@ -69,17 +69,14 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   return (
     <>
       {/* Sidebar - Hidden on mobile by default */}
-      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#f8f0ea] shadow-lg transition-all duration-300 z-40
+      <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-[#241D1E] shadow-lg transition-all duration-300 z-40
         ${isExpanded ? 'w-64' : 'w-16'}
         md:block hidden
-      `} style={{ borderRightColor: '#EA7B7B', borderRightWidth: '2px' }}>
+      `} style={{ borderRightColor: '#44494D', borderRightWidth: '1px' }}>
         {/* Toggle Button */}
         <button
           onClick={onToggleExpanded}
-          className="absolute -right-3 top-4 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md"
-          style={{ backgroundColor: '#ee0434', color: 'white' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#D25353'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#ee0434'}
+          className="absolute -right-3 top-4 w-6 h-6 rounded-full flex items-center justify-center transition-colors shadow-md bg-white text-[#44494D] hover:text-[#EE0033]"
         >
           {isExpanded ? <ChevronRight className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
         </button>
@@ -88,28 +85,28 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
         <div className="p-4 h-full flex flex-col">
           {/* Status Summary */}
           {isExpanded && (
-            <div className="mb-4 pb-4" style={{ borderBottomColor: '#EA7B7B', borderBottomWidth: '2px' }}>
-              <div className="text-xs font-semibold uppercase mb-3" style={{ color: '#9E3B3B' }}>System Status</div>
+            <div className="mb-4 pb-4 border-b border-[#44494D]">
+              <div className="text-xs font-semibold uppercase mb-3 text-gray-500">System Status</div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">Loop</span>
+                  <span className="text-xs text-gray-400">Loop</span>
                   <div className={`w-2 h-2 rounded-full ${getStatusColor()} animate-pulse`}></div>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">Alerts</span>
-                  <span className="text-xs font-bold text-red-600">{alertCount}</span>
+                  <span className="text-xs text-gray-400">Alerts</span>
+                  <span className="text-xs font-bold text-white">{alertCount}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">Intents</span>
-                  <span className="text-xs font-bold text-primary-600">{intentCount}</span>
+                  <span className="text-xs text-gray-400">Intents</span>
+                  <span className="text-xs font-bold text-white">{intentCount}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-600">Hotspots</span>
-                  <span className="text-xs font-bold text-orange-600">{hotspotCount}</span>
+                  <span className="text-xs text-gray-400">Hotspots</span>
+                  <span className="text-xs font-bold text-white">{hotspotCount}</span>
                 </div>
               </div>
             </div>
@@ -130,20 +127,20 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
                       !isExpanded && 'justify-center'
                     }`}
                     style={{
-                      backgroundColor: isActive ? '#ee0434' : 'transparent',
-                      color: isActive ? 'white' : '#9E3B3B',
-                      boxShadow: isActive ? '0 4px 6px -1px rgba(238, 4, 52, 0.2)' : 'none'
+                      backgroundColor: isActive ? '#EE0033' : 'transparent',
+                      color: isActive ? 'white' : '#9CA3AF',
+                      boxShadow: isActive ? '0 4px 6px -1px rgba(238, 0, 51, 0.3)' : 'none'
                     }}
                     onMouseEnter={(e) => {
                       if (!isActive) {
-                        e.currentTarget.style.backgroundColor = '#f8f0ea';
-                        e.currentTarget.style.color = '#ee0434';
+                        e.currentTarget.style.backgroundColor = '#44494D';
+                        e.currentTarget.style.color = 'white';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (!isActive) {
                         e.currentTarget.style.backgroundColor = 'transparent';
-                        e.currentTarget.style.color = '#9E3B3B';
+                        e.currentTarget.style.color = '#9CA3AF';
                       }
                     }}
                     title={!isExpanded ? section.label : ''}
@@ -160,8 +157,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
 
           {/* Footer Info */}
           {isExpanded && (
-            <div className="pt-4" style={{ borderTopColor: '#EA7B7B', borderTopWidth: '2px' }}>
-              <div className="text-xs text-center font-semibold" style={{ color: '#ee0434' }}>
+            <div className="pt-4" style={{ borderTopColor: '#EE0434', borderTopWidth: '2px' }}>
+              <div className="text-xs text-center font-semibold" style={{ color: '#FFE6EC' }}>
                 VULCAN
               </div>
             </div>

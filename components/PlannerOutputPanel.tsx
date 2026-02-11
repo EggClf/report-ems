@@ -484,9 +484,9 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
 
   if (!planResponse) {
     return (
-      <div className="bg-[#fdf9f8] rounded-lg shadow-md p-8 text-center text-slate-500">
-        <Cpu className="w-12 h-12 mx-auto mb-3 text-slate-400" />
-        <h3 className="text-lg font-semibold text-slate-700 mb-2">No Plan Data</h3>
+      <div className="bg-white rounded-lg shadow-md p-8 text-center text-gray-500 border border-red-100">
+        <Cpu className="w-12 h-12 mx-auto mb-3 text-red-100" />
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">No Plan Data</h3>
         <p className="text-sm">Could not load plan data from the backend. Please try again.</p>
       </div>
     );

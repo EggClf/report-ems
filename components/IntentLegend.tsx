@@ -30,10 +30,9 @@ export const IntentLegend: React.FC = () => {
   ];
 
   return (
-    <div className="bg-[#fdf9f8] rounded-lg shadow-md p-6" style={{ backgroundColor: 'var(--panel-bg, #fdf9f8)' }}>
-      <style>{`.dark { --panel-bg: #5D0E41; }`}</style>
-      <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
-        <Info className="w-5 h-5 text-primary-600" />
+    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <Info className="w-5 h-5 text-[#EE0434]" />
         Intent Classification Reference
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

@@ -355,7 +355,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#F5F7F8]">
       {/* Sidebar Navigation */}
       <SidebarNavigation
         activeSection={activeSection}
@@ -368,46 +368,50 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         onToggleExpanded={() => setSidebarExpanded(!sidebarExpanded)}
       />
       {/* Navbar */}
-      <nav className="bg-[#f8f0ea] px-6 py-4 shadow-md sticky top-0 z-50 border-b-3" style={{ borderBottomColor: '#ee0434', borderBottomWidth: '3px' }}>
-        <div className="max-w-[1920px] mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10">
-              <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
-            </div>
-            <div>
-              <h1 className="text-lg font-bold tracking-tight" style={{ color: '#9E3B3B' }}>
-                VULCAN
-              </h1>
-              <p className="text-[10px] uppercase tracking-wider" style={{ color: '#D25353' }}>
-                <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
-              </p>
+      <nav className="shadow-md sticky top-0 z-50 border-b-3 overflow-hidden bg-[#44494D]" style={{ borderBottomColor: '#EE0434', borderBottomWidth: '3px' }}>
+        <div className="max-w-[1920px] mx-auto flex items-stretch min-h-[100px]">
+          {/* Left Section - Red with Diagonal Cut */}
+          <div className="relative bg-[#C0042B] px-8 py-6 flex items-center" style={{ clipPath: 'polygon(0 0, 100% 0, calc(100% - 50px) 100%, 0 100%)' }}>
+            <div className="flex items-center gap-3 pr-12">
+              <div className="flex items-center justify-center w-10 h-10">
+                <img src="/logo_vulcan.png" alt="VULCAN Logo" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold tracking-tight text-white">
+                  VULCAN
+                </h1>
+                <p className="text-base uppercase tracking-wider text-white">
+                  <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* Right Section - Gray */}
+          <div className="flex-1 bg-[#44494D] px-6 py-6 flex items-center justify-end gap-4">
             {/* Last Update */}
-            <div className="text-xs" style={{ color: '#9E3B3B' }}>
+            <div className="text-base font-bold" style={{ color: '#FFE6EC' }}>
               Last updated: {lastUpdate.toLocaleTimeString()}
             </div>
 
             {/* Date Picker */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
-              <Calendar className="w-4 h-4" style={{ color: '#ee0434' }} />
+            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
+              <Calendar className="w-6 h-6" style={{ color: '#C0042B' }} />
               <input
                 type="date"
                 value={formatDateForInput(selectedDate)}
                 onChange={handleDateChange}
                 max={formatDateForInput(new Date())}
-                className="bg-transparent text-sm font-medium border-none outline-none cursor-pointer"
-                style={{ color: '#9E3B3B' }}
+                className="bg-transparent text-base font-medium border-none outline-none cursor-pointer"
+                style={{ color: '#7A1230' }}
               />
             </div>
 
             {/* Task Type Toggle */}
-            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
+            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
               <button
                 onClick={() => setSelectedModelType('ES')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
                   selectedModelType === 'ES'
                     ? 'bg-green-500 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -418,7 +422,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               </button>
               <button
                 onClick={() => setSelectedModelType('MRO')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded transition-colors ${
+                className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
                   selectedModelType === 'MRO'
                     ? 'bg-purple-500 text-white'
                     : 'text-slate-600 hover:bg-slate-100'
@@ -430,13 +434,13 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             </div>
 
             {/* Loop Status Indicator */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EA7B7B', borderWidth: '1px' }}>
-              <Activity className={`w-4 h-4 ${
+            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
+              <Activity className={`w-6 h-6 ${
                 overviewData.loopStatus === 'running' ? 'text-green-500 animate-pulse' :
                 overviewData.loopStatus === 'degraded' ? 'text-yellow-500' :
                 'text-gray-500'
               }`} />
-              <span className="text-sm font-medium capitalize" style={{ color: '#9E3B3B' }}>{overviewData.loopStatus}</span>
+              <span className="text-base font-medium capitalize" style={{ color: '#7A1230' }}>{overviewData.loopStatus}</span>
             </div>
           </div>
         </div>
@@ -491,7 +495,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             {/* Detailed Analysis Section */}
             {selectedCell && (
             <div className="p-4 bg-primary-600 border-2 border-primary-500 rounded-lg">
-              <div className="text-sm font-semibold text-white">
+              <div className="text-base font-semibold text-white">
                 📍 Viewing {selectedModelType} analysis for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                 {' '}(NE: {selectedCell.ne_name})
               </div>
@@ -503,16 +507,16 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               {decisionTraceLoading ? (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
-                    <Activity className="w-5 h-5 animate-pulse text-primary-600" />
+                    <Activity className="w-6 h-6 animate-pulse text-primary-600" />
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>
               ) : !decisionTrace ? (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
-                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
-                    <p className="text-sm">Click on any cell in the table above to run ML prediction and view the decision tree trace.</p>
+                    <Activity className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-2xl font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
+                    <p className="text-base">Click on any cell in the table above to run ML prediction and view the decision tree trace.</p>
                   </div>
                 </div>
               ) : (
@@ -525,7 +529,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               {planLoading ? (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="flex items-center justify-center space-x-3">
-                    <Activity className="w-5 h-5 animate-pulse text-primary-600" />
+                    <Activity className="w-6 h-6 animate-pulse text-primary-600" />
                     <span className="text-gray-600">Loading {selectedModelType} plan data from backend...</span>
                   </div>
                 </div>
@@ -534,9 +538,9 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               ) : (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
-                    <Activity className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Plan Data Available</h3>
-                    <p className="text-sm">Could not load plan data for the selected date. Please check the backend or try another date.</p>
+                    <Activity className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-2xl font-semibold text-gray-700 mb-2">No Plan Data Available</h3>
+                    <p className="text-base">Could not load plan data for the selected date. Please check the backend or try another date.</p>
                   </div>
                 </div>
               )}
@@ -546,7 +550,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
             {selectedCell && executionOutcome && (
               <>
                 <div className="p-4 bg-amber-50 border-2 border-amber-300 rounded-lg">
-                  <div className="text-sm font-semibold text-amber-800">
+                  <div className="text-base font-semibold text-amber-800">
                     📊 Execution outcome for Cell: <span className="font-mono">{selectedCell.cellname}</span>
                     {' '}(NE: {selectedCell.ne_name}) • Task: {selectedModelType}
                   </div>
@@ -561,10 +565,10 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       </div>
 
       {/* Footer */}
-      <footer className={`bg-[#f8f0ea] text-center py-4 mt-12 transition-all duration-300 ${
+      <footer className={`bg-[#C0042B] text-center py-6 mt-12 transition-all duration-300 ${
         sidebarExpanded ? 'md:ml-64' : 'md:ml-16'
-      }`} style={{ borderTopColor: '#ee0434', borderTopWidth: '3px' }}>
-        <p className="text-xs" style={{ color: '#9E3B3B' }}>
+      }`} style={{ borderTopColor: '#EE0434', borderTopWidth: '3px' }}>
+        <p className="text-base" style={{ color: '#FFE6EC' }}>
           VULCAN - <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
           {' '}{cells.length} Active Cells • {hotspots.length} Hotspots Detected
         </p>
