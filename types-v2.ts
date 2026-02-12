@@ -85,6 +85,40 @@ export interface DecisionTreeTrace {
   featureSnapshot: Record<string, number>;
 }
 
+// --- Multi-cell batch types ---
+
+export interface CellDecisionResult {
+  cellId: string;
+  modelType: IntentLabel;
+  decision: boolean | null;
+  confidence: number | null;
+  probabilities: number[] | null;
+  path: DecisionTreeNode[];
+  topFeatures: {
+    name: string;
+    value: number;
+    importance: number;
+  }[];
+  counterfactual: {
+    feature: string;
+    currentValue: number;
+    thresholdValue: number;
+    alternativeIntent: IntentLabel;
+  }[];
+  featureSnapshot: Record<string, number>;
+  error: string | null;
+}
+
+export interface BatchTraceResult {
+  modelType: IntentLabel;
+  totalCells: number;
+  appliedCount: number;
+  notAppliedCount: number;
+  errorCount: number;
+  results: CellDecisionResult[];
+  timestamp: string;
+}
+
 export interface PlannerAction {
   id: string;
   action: string;

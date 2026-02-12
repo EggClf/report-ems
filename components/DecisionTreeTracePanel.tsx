@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb, GitBranch, TrendingDown, TrendingUp, ChevronDown, ChevronRight, Info } from 'lucide-react';
-import { DecisionTreeTrace } from '../types-v2';
+import { BookOpen, Shield, AlertTriangle, CheckCircle, XCircle, Lightbulb, GitBranch, TrendingDown, TrendingUp, ChevronDown, ChevronRight, Info, List, BarChart3 } from 'lucide-react';
+import { DecisionTreeTrace, BatchTraceResult, CellDecisionResult } from '../types-v2';
 
 interface DecisionTreeTracePanelProps {
-  trace: DecisionTreeTrace;
+  trace?: DecisionTreeTrace;
+  batchResult?: BatchTraceResult;
 }
 
 // Human-readable feature context (model-agnostic, threshold-free)
@@ -362,9 +363,27 @@ function isNeutralImpact(impact: string): boolean {
   return impact.toLowerCase().includes('neutral');
 }
 
-export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace }) => {
+export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ trace, batchResult }) => {
   const [activeTab, setActiveTab] = useState<'explanation' | 'details'>('explanation');
   const [expandedNodes, setExpandedNodes] = useState<Set<number>>(new Set());
+  // For batch mode: which cell is selected for detail view
+  const [selectedCellId, setSelectedCellId] = useState<string | null>(null);
+
+  // If batch result is provided, show multi-cell view
+  if (batchResult) {
+    return (
+      <BatchDecisionPanel
+        batchResult={batchResult}
+        selectedCellId={selectedCellId}
+        onSelectCell={setSelectedCellId}
+      />
+    );
+  }
+
+  // Single trace mode (backward compatible)
+  if (!trace) {
+    return null;
+  }
 
   const leafNode = trace.path.find((node) => node.featureName === 'LEAF');
   const leafDecision = leafNode
@@ -659,6 +678,254 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
                 <div className="text-blue-700">Final decision</div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Multi-cell Batch Decision Panel ---
+
+interface BatchDecisionPanelProps {
+  batchResult: BatchTraceResult;
+  selectedCellId: string | null;
+  onSelectCell: (cellId: string | null) => void;
+}
+
+const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, selectedCellId, onSelectCell }) => {
+  const [filterMode, setFilterMode] = useState<'all' | 'applied' | 'not_applied' | 'error'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredResults = batchResult.results.filter((r) => {
+    const matchesSearch = r.cellId.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    if (filterMode === 'applied') return r.decision === true;
+    if (filterMode === 'not_applied') return r.decision === false;
+    if (filterMode === 'error') return r.error !== null;
+    return true;
+  });
+
+  // Find the selected cell result for detail view
+  const selectedResult = selectedCellId
+    ? batchResult.results.find((r) => r.cellId === selectedCellId)
+    : null;
+
+  // Convert CellDecisionResult to DecisionTreeTrace for the detail panel
+  const selectedTrace: DecisionTreeTrace | null = selectedResult && selectedResult.decision !== null
+    ? {
+        intentId: selectedResult.cellId,
+        intentLabel: selectedResult.modelType,
+        decision: selectedResult.decision ?? undefined,
+        confidence: selectedResult.confidence ?? undefined,
+        path: selectedResult.path,
+        topFeatures: selectedResult.topFeatures,
+        counterfactual: selectedResult.counterfactual,
+        featureSnapshot: selectedResult.featureSnapshot,
+      }
+    : null;
+
+  return (
+    <div className="bg-white rounded-lg shadow-md p-6 border border-red-100">
+      <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <BookOpen className="w-6 h-6 text-[#EE0434]" />
+        Multi-Cell {batchResult.modelType} Decision Results
+      </h2>
+
+      {/* Summary Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+        <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 text-center">
+          <div className="text-xs text-slate-600 mb-1">Total Cells</div>
+          <div className="text-2xl font-bold text-slate-800">{batchResult.totalCells}</div>
+        </div>
+        <div className="bg-green-50 rounded-lg p-3 border border-green-200 text-center cursor-pointer hover:bg-green-100" onClick={() => setFilterMode(filterMode === 'applied' ? 'all' : 'applied')}>
+          <div className="text-xs text-green-700 mb-1">Apply {batchResult.modelType}</div>
+          <div className="text-2xl font-bold text-green-800">{batchResult.appliedCount}</div>
+        </div>
+        <div className="bg-orange-50 rounded-lg p-3 border border-orange-200 text-center cursor-pointer hover:bg-orange-100" onClick={() => setFilterMode(filterMode === 'not_applied' ? 'all' : 'not_applied')}>
+          <div className="text-xs text-orange-700 mb-1">Do Not Apply</div>
+          <div className="text-2xl font-bold text-orange-800">{batchResult.notAppliedCount}</div>
+        </div>
+        <div className="bg-red-50 rounded-lg p-3 border border-red-200 text-center cursor-pointer hover:bg-red-100" onClick={() => setFilterMode(filterMode === 'error' ? 'all' : 'error')}>
+          <div className="text-xs text-red-700 mb-1">Errors</div>
+          <div className="text-2xl font-bold text-red-800">{batchResult.errorCount}</div>
+        </div>
+        <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 text-center">
+          <div className="text-xs text-blue-700 mb-1">Avg Confidence</div>
+          <div className="text-2xl font-bold text-blue-800">
+            {batchResult.results.filter(r => r.confidence !== null).length > 0
+              ? (batchResult.results.filter(r => r.confidence !== null).reduce((s, r) => s + (r.confidence ?? 0), 0)
+                / batchResult.results.filter(r => r.confidence !== null).length * 100).toFixed(0) + '%'
+              : 'N/A'}
+          </div>
+        </div>
+      </div>
+
+      {/* Progress Bar */}
+      {batchResult.totalCells > 0 && (
+        <div className="mb-6">
+          <div className="flex h-4 rounded-full overflow-hidden bg-slate-200">
+            {batchResult.appliedCount > 0 && (
+              <div
+                className="bg-green-500 transition-all"
+                style={{ width: `${(batchResult.appliedCount / batchResult.totalCells) * 100}%` }}
+                title={`${batchResult.appliedCount} applied`}
+              />
+            )}
+            {batchResult.notAppliedCount > 0 && (
+              <div
+                className="bg-orange-400 transition-all"
+                style={{ width: `${(batchResult.notAppliedCount / batchResult.totalCells) * 100}%` }}
+                title={`${batchResult.notAppliedCount} not applied`}
+              />
+            )}
+            {batchResult.errorCount > 0 && (
+              <div
+                className="bg-red-500 transition-all"
+                style={{ width: `${(batchResult.errorCount / batchResult.totalCells) * 100}%` }}
+                title={`${batchResult.errorCount} errors`}
+              />
+            )}
+          </div>
+          <div className="flex gap-4 mt-1 text-xs text-slate-600">
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500" /> Applied</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-400" /> Not Applied</span>
+            {batchResult.errorCount > 0 && <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500" /> Error</span>}
+          </div>
+        </div>
+      )}
+
+      {/* Search and filter */}
+      <div className="flex gap-2 mb-4">
+        <input
+          type="text"
+          placeholder="Search by cell ID..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+        />
+        <select
+          value={filterMode}
+          onChange={(e) => setFilterMode(e.target.value as any)}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white"
+        >
+          <option value="all">All ({batchResult.totalCells})</option>
+          <option value="applied">Applied ({batchResult.appliedCount})</option>
+          <option value="not_applied">Not Applied ({batchResult.notAppliedCount})</option>
+          {batchResult.errorCount > 0 && <option value="error">Errors ({batchResult.errorCount})</option>}
+        </select>
+      </div>
+
+      {/* Cells Result Table */}
+      <div className="bg-slate-50 rounded-lg overflow-hidden border border-slate-200 mb-6">
+        <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-slate-200 text-xs font-semibold text-slate-600 uppercase">
+          <div className="col-span-3">Cell ID</div>
+          <div className="col-span-2 text-center">Decision</div>
+          <div className="col-span-2 text-center">Confidence</div>
+          <div className="col-span-3">Top Factor</div>
+          <div className="col-span-2 text-center">Details</div>
+        </div>
+
+        <div className="divide-y divide-slate-200 max-h-[400px] overflow-y-auto">
+          {filteredResults.length === 0 ? (
+            <div className="px-4 py-8 text-center text-gray-500">No cells match the current filter</div>
+          ) : (
+            filteredResults.map((result) => {
+              const isSelected = result.cellId === selectedCellId;
+              const topFeature = result.topFeatures.length > 0 ? result.topFeatures[0] : null;
+
+              return (
+                <div
+                  key={result.cellId}
+                  className={`grid grid-cols-12 gap-2 px-4 py-3 cursor-pointer transition-all hover:bg-blue-50 ${
+                    isSelected ? 'bg-blue-100 border-l-4 border-blue-500' : ''
+                  } ${result.error ? 'bg-red-50' : ''}`}
+                  onClick={() => onSelectCell(isSelected ? null : result.cellId)}
+                >
+                  <div className="col-span-3 flex items-center">
+                    <span className="text-sm font-mono font-semibold text-slate-700">{result.cellId}</span>
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-center">
+                    {result.error ? (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">
+                        <XCircle className="w-3 h-3" /> Error
+                      </span>
+                    ) : result.decision ? (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded">
+                        <CheckCircle className="w-3 h-3" /> Apply {batchResult.modelType}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs font-bold rounded">
+                        <XCircle className="w-3 h-3" /> Do Not Apply
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-center">
+                    {result.confidence !== null ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-16 bg-slate-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${result.confidence > 0.8 ? 'bg-green-500' : result.confidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                            style={{ width: `${result.confidence * 100}%` }}
+                          />
+                        </div>
+                        <span className="text-xs font-semibold text-slate-700">{(result.confidence * 100).toFixed(0)}%</span>
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">N/A</span>
+                    )}
+                  </div>
+
+                  <div className="col-span-3 flex items-center">
+                    {topFeature ? (
+                      <span className="text-xs text-slate-600 truncate" title={topFeature.name}>
+                        {topFeature.name} ({(topFeature.importance * 100).toFixed(0)}%)
+                      </span>
+                    ) : result.error ? (
+                      <span className="text-xs text-red-600 truncate" title={result.error}>{result.error}</span>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </div>
+
+                  <div className="col-span-2 flex items-center justify-center">
+                    <ChevronRight className={`w-4 h-4 text-slate-500 transition-transform ${isSelected ? 'rotate-90' : ''}`} />
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Detail View for Selected Cell */}
+      {selectedCellId && selectedTrace && (
+        <div className="border-t-2 border-primary-300 pt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary-600" />
+              Decision Detail: <span className="font-mono">{selectedCellId}</span>
+            </h3>
+            <button
+              onClick={() => onSelectCell(null)}
+              className="px-3 py-1 text-sm text-slate-600 hover:text-white hover:bg-primary-600 rounded border border-slate-300 transition-colors"
+            >
+              Close Detail
+            </button>
+          </div>
+          <DecisionTreeTracePanel trace={selectedTrace} />
+        </div>
+      )}
+
+      {selectedCellId && !selectedTrace && (
+        <div className="border-t-2 border-red-300 pt-6">
+          <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center text-red-700">
+            Could not load detailed trace for cell <span className="font-mono font-bold">{selectedCellId}</span>.
+            {batchResult.results.find(r => r.cellId === selectedCellId)?.error && (
+              <div className="text-sm mt-1">Error: {batchResult.results.find(r => r.cellId === selectedCellId)?.error}</div>
+            )}
           </div>
         </div>
       )}

@@ -14,9 +14,10 @@ import {
 } from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
+import { BatchCellInput } from '../services/mlModelAPI';
 import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
 import { Hotspot, ExecutionOutcome, ExecutionStatus, Priority } from '../types-v2';
-import { DecisionTreeTrace } from '../types-v2';
+import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -47,6 +48,8 @@ export const LoopMonitoringDashboard: React.FC = () => {
 
   // Decision trace and planner data
   const [decisionTrace, setDecisionTrace] = useState<DecisionTreeTrace | null>(null);
+  const [batchTraceResult, setBatchTraceResult] = useState<BatchTraceResult | null>(null);
+  const [batchLoading, setBatchLoading] = useState(false);
   const [plannerOutput, setPlannerOutput] = useState<any>(null);
   const [executionOutcome, setExecutionOutcome] = useState<any>(null);
 
@@ -288,6 +291,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
     setSelectedCell(cell);
     setSelectedModelType(modelType);
     setDecisionTraceLoading(true);
+    setBatchTraceResult(null); // Clear batch results when clicking a single cell
 
     try {
       // Extract features for the selected model
@@ -333,6 +337,35 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
     }
 
     // Navigate to decision trace section
+    handleNavigate('decision-trace');
+  };
+
+  // Batch predict all cells
+  const handleBatchPredict = async (validCells: CellFeatures[], modelType: 'ES' | 'MRO') => {
+    setBatchLoading(true);
+    setDecisionTrace(null); // Clear single-cell trace
+    setSelectedCell(null);
+
+    try {
+      // Build batch input
+      const batchCells: BatchCellInput[] = validCells.map((cell) => ({
+        cell_id: cell.cellname,
+        features: networkScanAPI.extractMLFeatures(cell, modelType),
+      }));
+
+      console.log(`Running batch ${modelType} prediction for ${batchCells.length} cells...`);
+
+      const result = await mlModelAPI.getBatchDecisionTraces(modelType, batchCells);
+      setBatchTraceResult(result);
+
+      console.log(`✓ Batch ${modelType} prediction complete: ${result.appliedCount} applied, ${result.notAppliedCount} not applied`);
+    } catch (error) {
+      console.error('Batch prediction failed:', error);
+      setBatchTraceResult(null);
+    } finally {
+      setBatchLoading(false);
+    }
+
     handleNavigate('decision-trace');
   };
 
@@ -466,6 +499,8 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               <CellsTablePanel
                 cells={cells}
                 onCellClick={handleCellClick}
+                onBatchPredict={handleBatchPredict}
+                batchLoading={batchLoading}
                 loading={cellsLoading}
               />
             </div>
@@ -493,12 +528,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                     <span className="text-gray-600">Loading decision trace from ML model...</span>
                   </div>
                 </div>
+              ) : batchTraceResult ? (
+                <DecisionTreeTracePanel batchResult={batchTraceResult} />
               ) : !decisionTrace ? (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
                     <Activity className="w-16 h-16 mx-auto mb-4 text-gray-400" />
                     <h3 className="text-2xl font-semibold text-gray-700 mb-2">No Analysis Selected</h3>
-                    <p className="text-base">Click on any cell in the table above to run ML prediction and view the decision tree trace.</p>
+                    <p className="text-base">Click on any cell in the table above to run ML prediction, or use <strong>Run All Cells</strong> to process all cells at once.</p>
                   </div>
                 </div>
               ) : (

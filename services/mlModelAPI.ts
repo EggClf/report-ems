@@ -3,7 +3,7 @@
  * Provides methods to interact with the ML prediction backend
  */
 
-import { DecisionTreeTrace, IntentLabel } from '../types-v2';
+import { DecisionTreeTrace, IntentLabel, BatchTraceResult, CellDecisionResult } from '../types-v2';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://172.16.28.63:8181';
 
@@ -54,6 +54,53 @@ export interface ModelInfo {
   features: string[];
   n_features: number;
   model_class: string;
+}
+
+export interface BatchCellInput {
+  cell_id: string;
+  features: Record<string, number>;
+}
+
+export interface BatchPredictionRequest {
+  model_type: 'ES' | 'MRO';
+  cells: BatchCellInput[];
+}
+
+export interface BatchTraceAPIResponse {
+  model_type: string;
+  total_cells: number;
+  applied_count: number;
+  not_applied_count: number;
+  error_count: number;
+  results: Array<{
+    cell_id: string;
+    model_type: string;
+    decision: boolean | null;
+    confidence: number | null;
+    probabilities: number[] | null;
+    path: Array<{
+      nodeId: number;
+      condition: string;
+      threshold: number;
+      featureValue: number;
+      featureName: string;
+      passed: boolean;
+    }>;
+    topFeatures: Array<{
+      name: string;
+      value: number;
+      importance: number;
+    }>;
+    counterfactual: Array<{
+      feature: string;
+      currentValue: number;
+      thresholdValue: number;
+      alternativeIntent: string;
+    }>;
+    featureSnapshot: Record<string, number>;
+    error: string | null;
+  }>;
+  timestamp: string;
 }
 
 class MLModelAPI {
@@ -144,6 +191,68 @@ class MLModelAPI {
         alternativeIntent: cf.alternativeIntent as IntentLabel,
       })),
       featureSnapshot: response.featureSnapshot,
+    };
+  }
+
+  /**
+   * Make batch predictions with full decision tree trace for multiple cells
+   */
+  async predictBatchWithTrace(request: BatchPredictionRequest): Promise<BatchTraceAPIResponse> {
+    const response = await fetch(`${this.baseUrl}/predict/batch-trace`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Batch trace prediction failed');
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get decision tree traces for multiple cells, formatted for the frontend
+   */
+  async getBatchDecisionTraces(
+    modelType: 'ES' | 'MRO',
+    cells: BatchCellInput[]
+  ): Promise<BatchTraceResult> {
+    const request: BatchPredictionRequest = {
+      model_type: modelType,
+      cells,
+    };
+
+    const response = await this.predictBatchWithTrace(request);
+
+    // Convert backend response to frontend BatchTraceResult format
+    const results: CellDecisionResult[] = response.results.map((r) => ({
+      cellId: r.cell_id,
+      modelType: r.model_type as IntentLabel,
+      decision: r.decision,
+      confidence: r.confidence,
+      probabilities: r.probabilities,
+      path: r.path,
+      topFeatures: r.topFeatures,
+      counterfactual: r.counterfactual.map((cf) => ({
+        ...cf,
+        alternativeIntent: cf.alternativeIntent as IntentLabel,
+      })),
+      featureSnapshot: r.featureSnapshot,
+      error: r.error,
+    }));
+
+    return {
+      modelType: response.model_type as IntentLabel,
+      totalCells: response.total_cells,
+      appliedCount: response.applied_count,
+      notAppliedCount: response.not_applied_count,
+      errorCount: response.error_count,
+      results,
+      timestamp: response.timestamp,
     };
   }
 

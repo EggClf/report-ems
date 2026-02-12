@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
-import { Server, AlertCircle, Activity, ChevronRight } from 'lucide-react';
+import { Server, AlertCircle, Activity, ChevronRight, PlayCircle } from 'lucide-react';
 import { CellFeatures } from '../services/networkScanAPI';
 
 interface CellsTablePanelProps {
   cells: CellFeatures[];
   onCellClick: (cell: CellFeatures, modelType: 'ES' | 'MRO') => void;
+  onBatchPredict?: (cells: CellFeatures[], modelType: 'ES' | 'MRO') => void;
+  batchLoading?: boolean;
   loading?: boolean;
 }
 
-export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellClick, loading = false }) => {
+export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellClick, onBatchPredict, batchLoading = false, loading = false }) => {
   const [selectedModelType, setSelectedModelType] = useState<'ES' | 'MRO'>('ES');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -70,6 +72,35 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
 
         {/* Model Type Selector */}
         <div className="flex gap-2">
+          {onBatchPredict && (
+            <button
+              onClick={() => {
+                const validCells = cells.filter(c => hasValidFeatures(c, selectedModelType));
+                if (validCells.length > 0) {
+                  onBatchPredict(validCells, selectedModelType);
+                }
+              }}
+              disabled={batchLoading}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                batchLoading
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-[#EE0434] text-white hover:bg-[#C0042B]'
+              }`}
+              title={`Run ${selectedModelType} prediction on all cells with valid features`}
+            >
+              {batchLoading ? (
+                <>
+                  <Activity className="w-4 h-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <PlayCircle className="w-4 h-4" />
+                  Run All Cells ({cells.filter(c => hasValidFeatures(c, selectedModelType)).length})
+                </>
+              )}
+            </button>
+          )}
           <button
             onClick={() => setSelectedModelType('ES')}
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
