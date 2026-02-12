@@ -413,9 +413,8 @@ const MROParamTable: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({ configP
   );
 };
 
-const MROSummaryCards: React.FC<{ configPlan: MROConfigPlanEntry[]; cellNames: string[] }> = ({
+const MROSummaryCards: React.FC<{ configPlan: MROConfigPlanEntry[] }> = ({
   configPlan,
-  cellNames,
 }) => {
   const avgHOS = configPlan.reduce((s, e) => s + e.predicted_hos, 0) / configPlan.length;
   const minHOS = Math.min(...configPlan.map((e) => e.predicted_hos));
@@ -423,13 +422,7 @@ const MROSummaryCards: React.FC<{ configPlan: MROConfigPlanEntry[]; cellNames: s
   const uniqueHOM = new Set(configPlan.map((e) => e.hom)).size;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <SummaryCard
-        label="Cells"
-        value={cellNames.length.toString()}
-        sub={cellNames.slice(0, 2).join(', ') + (cellNames.length > 2 ? ` +${cellNames.length - 2}` : '')}
-        color="indigo"
-      />
+    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
       <SummaryCard
         label="Avg HOS"
         value={`${(avgHOS * 100).toFixed(2)}%`}
@@ -661,7 +654,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
           return (
             <>
               {(activeTab === 'overview' || activeTab === 'plan') && (
-                <MROSummaryCards configPlan={mroData.config_plan} cellNames={mroData.cell_names} />
+                <MROSummaryCards configPlan={mroData.config_plan} />
               )}
 
               {activeTab === 'overview' && (
