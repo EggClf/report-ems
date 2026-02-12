@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Cpu, Zap, Settings, BarChart3, Clock, Power, PowerOff, TrendingUp, Info } from 'lucide-react';
+import { Cpu, Zap, Settings, BarChart3, Clock, Power, PowerOff, TrendingUp, Info, Table2, FileSpreadsheet } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   LineChart, Line, AreaChart, Area, Cell, ReferenceLine, ComposedChart
@@ -8,9 +8,12 @@ import {
   PlanLoadResponse, ESPlanData, MROPlanData,
   ESScheduleEntry, ESForecastEntry, MROConfigPlanEntry
 } from '../services/api';
+import { CSVDataResponse } from '../services/csvUploadAPI';
 
 interface PlannerOutputPanelProps {
   planResponse: PlanLoadResponse | null;
+  csvData?: CSVDataResponse | null;
+  csvLoading?: boolean;
 }
 
 // ─── Color palette ──────────────────────────────────────────────────
@@ -479,8 +482,62 @@ const SummaryCard: React.FC<{
 //  Main Panel
 // ═══════════════════════════════════════════════════════════════════════
 
-export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResponse }) => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'detail'>('overview');
+// ─── CSV Data Table ─────────────────────────────────────────────────
+const CSVDataTable: React.FC<{ csvData: CSVDataResponse }> = ({ csvData }) => {
+  const { columns, data, original_filename, uploaded_at, rows } = csvData;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+          <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
+          Uploaded Data &mdash; {original_filename}
+        </h3>
+        <div className="flex items-center gap-3 text-xs text-slate-500">
+          <span>{rows} rows &times; {columns.length} columns</span>
+          <span>Uploaded: {new Date(uploaded_at).toLocaleString()}</span>
+        </div>
+      </div>
+      <div className="overflow-x-auto max-h-[480px] overflow-y-auto border border-slate-200 rounded-lg">
+        <table className="w-full text-xs border-collapse">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-slate-100">
+              <th className="px-3 py-2 border border-slate-200 text-center font-semibold text-slate-600 w-12">#</th>
+              {columns.map((col) => (
+                <th
+                  key={col}
+                  className="px-3 py-2 border border-slate-200 text-left font-semibold text-slate-600 whitespace-nowrap"
+                >
+                  {col}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row, rowIdx) => (
+              <tr key={rowIdx} className="hover:bg-slate-50">
+                <td className="px-3 py-1.5 border border-slate-200 text-center text-slate-400 font-mono">
+                  {rowIdx + 1}
+                </td>
+                {columns.map((col) => (
+                  <td
+                    key={col}
+                    className="px-3 py-1.5 border border-slate-200 text-slate-700 whitespace-nowrap"
+                  >
+                    {row[col] != null ? String(row[col]) : <span className="text-slate-300">—</span>}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
+
+export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResponse, csvData, csvLoading }) => {
+  const [activeTab, setActiveTab] = useState<'overview' | 'plan' | 'detail'>('overview');
 
   if (!planResponse) {
     return (
@@ -530,13 +587,24 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
             Overview &amp; Charts
           </button>
           <button
-            onClick={() => setActiveTab('detail')}
+            onClick={() => setActiveTab('plan')}
             className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+              activeTab === 'plan'
+                ? 'bg-white text-slate-800 shadow-sm'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
+          >
+            Plan
+          </button>
+          <button
+            onClick={() => setActiveTab('detail')}
+            className={`px-4 py-1.5 text-xs font-semibold rounded-md transition-colors flex items-center gap-1 ${
               activeTab === 'detail'
                 ? 'bg-white text-slate-800 shadow-sm'
                 : 'text-slate-500 hover:text-slate-700'
             }`}
           >
+            <Table2 className="w-3.5 h-3.5" />
             Detailed Data
           </button>
         </div>
@@ -544,12 +612,34 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
 
       {/* Body */}
       <div className="px-6 py-6 space-y-6">
+        {/* ─── Detailed Data Tab (CSV) ─────────────────────── */}
+        {activeTab === 'detail' && (
+          csvLoading ? (
+            <div className="flex items-center justify-center py-12 space-x-3">
+              <Cpu className="w-6 h-6 animate-pulse text-indigo-500" />
+              <span className="text-sm text-slate-500">Loading CSV data...</span>
+            </div>
+          ) : csvData ? (
+            <CSVDataTable csvData={csvData} />
+          ) : (
+            <div className="text-center py-12">
+              <Table2 className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+              <h3 className="text-base font-semibold text-slate-700 mb-1">No Detailed Data Uploaded</h3>
+              <p className="text-sm text-slate-500">
+                Use the <strong>Admin Panel</strong> to upload a CSV file for <strong>{task_type}</strong> on <strong>{date}</strong>.
+              </p>
+            </div>
+          )
+        )}
+
         {/* ─── ES Task ────────────────────────────────────────── */}
         {isES && (() => {
           const esData = data as ESPlanData;
           return (
             <>
-              <ESSummaryCards schedule={esData.schedule} forecast={esData.forecast} />
+              {(activeTab === 'overview' || activeTab === 'plan') && (
+                <ESSummaryCards schedule={esData.schedule} forecast={esData.forecast} />
+              )}
 
               {activeTab === 'overview' && (
                 <>
@@ -558,7 +648,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
                 </>
               )}
 
-              {activeTab === 'detail' && (
+              {activeTab === 'plan' && (
                 <ESScheduleHeatmap schedule={esData.schedule} />
               )}
             </>
@@ -570,7 +660,9 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
           const mroData = data as MROPlanData;
           return (
             <>
-              <MROSummaryCards configPlan={mroData.config_plan} cellNames={mroData.cell_names} />
+              {(activeTab === 'overview' || activeTab === 'plan') && (
+                <MROSummaryCards configPlan={mroData.config_plan} cellNames={mroData.cell_names} />
+              )}
 
               {activeTab === 'overview' && (
                 <>
@@ -579,7 +671,7 @@ export const PlannerOutputPanel: React.FC<PlannerOutputPanelProps> = ({ planResp
                 </>
               )}
 
-              {activeTab === 'detail' && (
+              {activeTab === 'plan' && (
                 <MROParamTable configPlan={mroData.config_plan} />
               )}
             </>

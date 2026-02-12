@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Network, Calendar, Activity, Menu } from 'lucide-react';
+import { Network, Calendar, Activity, Menu, Shield } from 'lucide-react';
 import { OverviewPanel } from './OverviewPanel';
 import { HotspotsMapPanel } from './HotspotsMapPanel';
 import { CellsTablePanel } from './CellsTablePanel';
@@ -9,6 +9,7 @@ import { ExecutionOutcomePanel } from './ExecutionOutcomePanel';
 import { IntentLegend } from './IntentLegend';
 import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
+import { AdminPanel } from './AdminPanel';
 import {
   getMockPlannerOutput,
 } from '../services/mockDataV2';
@@ -16,6 +17,7 @@ import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
 import { BatchCellInput } from '../services/mlModelAPI';
 import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
+import { fetchCSVData, CSVDataResponse, NotFoundError } from '../services/csvUploadAPI';
 import { Hotspot, ExecutionOutcome, ExecutionStatus, Priority } from '../types-v2';
 import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
@@ -61,6 +63,13 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [alarmData, setAlarmData] = useState<AlarmRecord[]>([]);
   const [alarmsLoading, setAlarmsLoading] = useState(false);
 
+  // CSV data for Detailed Data tab
+  const [csvData, setCsvData] = useState<CSVDataResponse | null>(null);
+  const [csvLoading, setCsvLoading] = useState(false);
+
+  // Admin Panel visibility
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
+
   // Load cell data when date changes
   useEffect(() => {
     loadCellData(selectedDate);
@@ -77,6 +86,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
   // Auto-load plan data when date or task type changes
   useEffect(() => {
     loadPlanData(selectedDate, selectedModelType);
+  }, [selectedDate, selectedModelType]);
+
+  // Auto-load CSV data when date or task type changes
+  useEffect(() => {
+    loadCSVData(selectedDate, selectedModelType);
   }, [selectedDate, selectedModelType]);
 
   // Load cell data from network scan API
@@ -126,6 +140,36 @@ export const LoopMonitoringDashboard: React.FC = () => {
       setAlarmData([]);
     } finally {
       setAlarmsLoading(false);
+    }
+  };
+
+  // Load CSV data for Detailed Data tab
+  const loadCSVData = async (date: Date, taskType: 'ES' | 'MRO') => {
+    setCsvLoading(true);
+    try {
+      const dateStr = formatDateForInput(date);
+      const data = await fetchCSVData(dateStr, taskType);
+      setCsvData(data);
+      console.log(`✓ Loaded CSV data for ${taskType} on ${dateStr}`);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        // No CSV uploaded for this date/type — that's fine
+        setCsvData(null);
+      } else {
+        console.error('Failed to load CSV data:', error);
+        setCsvData(null);
+      }
+    } finally {
+      setCsvLoading(false);
+    }
+  };
+
+  // Called when admin uploads/deletes a CSV
+  const handleCSVUploadSuccess = (date: string, taskType: 'ES' | 'MRO') => {
+    // Reload CSV data if the upload matches the current view
+    const currentDateStr = formatDateForInput(selectedDate);
+    if (date === currentDateStr && taskType === selectedModelType) {
+      loadCSVData(selectedDate, selectedModelType);
     }
   };
 
@@ -455,6 +499,17 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               }`} />
               <span className="text-base font-medium capitalize" style={{ color: '#7A1230' }}>{overviewData.loopStatus}</span>
             </div>
+
+            {/* Admin Panel Button */}
+            <button
+              onClick={() => setAdminPanelOpen(true)}
+              className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm hover:bg-slate-50 transition-colors"
+              style={{ borderColor: '#EE0434', borderWidth: '1px' }}
+              title="Admin Panel — Upload CSV Data"
+            >
+              <Shield className="w-6 h-6" style={{ color: '#C0042B' }} />
+              <span className="text-base font-medium" style={{ color: '#7A1230' }}>Admin</span>
+            </button>
           </div>
         </div>
       </nav>
@@ -554,7 +609,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                   </div>
                 </div>
               ) : planData ? (
-                <PlannerOutputPanel planResponse={planData} />
+                <PlannerOutputPanel planResponse={planData} csvData={csvData} csvLoading={csvLoading} />
               ) : (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
@@ -598,6 +653,15 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
           VULCAN - <b>V</b>iettel <b>U</b>nified <b>L</b>ogic & <b>C</b>ontrol for <b>A</b>utonomous <b>N</b>etwork
         </p>
       </footer>
+
+      {/* Admin Panel Modal */}
+      <AdminPanel
+        selectedDate={selectedDate}
+        selectedModelType={selectedModelType}
+        onUploadSuccess={handleCSVUploadSuccess}
+        isOpen={adminPanelOpen}
+        onClose={() => setAdminPanelOpen(false)}
+      />
     </div>
   );
 };

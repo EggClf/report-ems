@@ -12,6 +12,7 @@ from contextlib import asynccontextmanager
 import logging
 
 from model_service import get_model_service, PredictionResult
+from csv_upload import router as csv_upload_router
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -47,6 +48,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(csv_upload_router)
 
 # Pydantic models for request/response
 class PredictionRequest(BaseModel):
