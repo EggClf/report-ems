@@ -485,7 +485,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
 
       {activeTab === 'explanation' ? (
         <>
-          <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-white/20 rounded">
+          <div className="mb-6 p-4 bg-indigo-600 border-l-4 border-white/20 rounded">
         <div className="flex items-center gap-3 mb-2">
           {finalDecision ? (
             <CheckCircle className="w-8 h-8 text-white" />
@@ -629,7 +629,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
       ) : (
         /* Details Tab - Tree Visualization */
         <div className="space-y-6">
-          <div className="mb-4 p-4 bg-primary-600 border-l-4 border-white/20 rounded">
+          <div className="mb-4 p-4 bg-indigo-600 border-l-4 border-white/20 rounded">
             <div className="flex items-center gap-3 mb-2">
               {finalDecision ? (
                 <CheckCircle className="w-8 h-8 text-white" />
@@ -831,7 +831,6 @@ const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, se
           ) : (
             filteredResults.map((result) => {
               const isSelected = result.cellId === selectedCellId;
-              const topFeature = result.topFeatures.length > 0 ? result.topFeatures[0] : null;
 
               return (
                 <div
@@ -841,11 +840,11 @@ const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, se
                   } ${result.error ? 'bg-red-50' : ''}`}
                   onClick={() => onSelectCell(isSelected ? null : result.cellId)}
                 >
-                  <div className="col-span-3 flex items-center">
+                  <div className="col-span-4 flex items-center">
                     <span className="text-sm font-mono font-semibold text-slate-700">{result.cellId}</span>
                   </div>
 
-                  <div className="col-span-2 flex items-center justify-center">
+                  <div className="col-span-3 flex items-center justify-center">
                     {result.error ? (
                       <span className="flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-bold rounded">
                         <XCircle className="w-3 h-3" /> Error
@@ -861,10 +860,10 @@ const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, se
                     )}
                   </div>
 
-                  <div className="col-span-2 flex items-center justify-center">
+                  <div className="col-span-3 flex items-center justify-center">
                     {result.confidence !== null ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-16 bg-slate-200 rounded-full h-2">
+                        <div className="w-20 bg-slate-200 rounded-full h-2">
                           <div
                             className={`h-2 rounded-full ${result.confidence > 0.8 ? 'bg-green-500' : result.confidence > 0.6 ? 'bg-yellow-500' : 'bg-red-500'}`}
                             style={{ width: `${result.confidence * 100}%` }}
@@ -874,18 +873,6 @@ const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, se
                       </div>
                     ) : (
                       <span className="text-xs text-gray-400">N/A</span>
-                    )}
-                  </div>
-
-                  <div className="col-span-3 flex items-center">
-                    {topFeature ? (
-                      <span className="text-xs text-slate-600 truncate" title={topFeature.name}>
-                        {topFeature.name} ({(topFeature.importance * 100).toFixed(0)}%)
-                      </span>
-                    ) : result.error ? (
-                      <span className="text-xs text-red-600 truncate" title={result.error}>{result.error}</span>
-                    ) : (
-                      <span className="text-xs text-gray-400">—</span>
                     )}
                   </div>
 
