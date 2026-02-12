@@ -65,29 +65,6 @@ class BatchPredictionRequest(BaseModel):
     model_type: str = Field(..., description="Model type: 'ES' or 'MRO'")
     cells: List[CellInput] = Field(..., description="List of cells with their features")
 
-class CellDecisionResult(BaseModel):
-    """Individual cell result in a batch response"""
-    cell_id: str
-    model_type: str
-    decision: Optional[bool]
-    confidence: Optional[float]
-    probabilities: Optional[List[float]]
-    path: List['DecisionNode']
-    topFeatures: List['FeatureImportance']
-    counterfactual: List['Counterfactual']
-    featureSnapshot: Dict[str, float]
-    error: Optional[str] = None
-
-class BatchTraceResponse(BaseModel):
-    """Batch prediction response with per-cell traces"""
-    model_type: str
-    total_cells: int
-    applied_count: int
-    not_applied_count: int
-    error_count: int
-    results: List[CellDecisionResult]
-    timestamp: str
-
 class FeatureImportance(BaseModel):
     """Feature importance information"""
     name: str
@@ -109,6 +86,29 @@ class Counterfactual(BaseModel):
     currentValue: float
     thresholdValue: float
     alternativeIntent: str
+
+class CellDecisionResult(BaseModel):
+    """Individual cell result in a batch response"""
+    cell_id: str
+    model_type: str
+    decision: Optional[bool]
+    confidence: Optional[float]
+    probabilities: Optional[List[float]]
+    path: List[DecisionNode]
+    topFeatures: List[FeatureImportance]
+    counterfactual: List[Counterfactual]
+    featureSnapshot: Dict[str, float]
+    error: Optional[str] = None
+
+class BatchTraceResponse(BaseModel):
+    """Batch prediction response with per-cell traces"""
+    model_type: str
+    total_cells: int
+    applied_count: int
+    not_applied_count: int
+    error_count: int
+    results: List[CellDecisionResult]
+    timestamp: str
 
 class DecisionTraceResponse(BaseModel):
     """Complete decision tree trace response"""
