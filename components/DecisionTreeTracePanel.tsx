@@ -485,7 +485,7 @@ export const DecisionTreeTracePanel: React.FC<DecisionTreeTracePanelProps> = ({ 
 
       {activeTab === 'explanation' ? (
         <>
-          <div className="mb-6 p-4 bg-primary-600 border-l-4 border-white/20 rounded">
+          <div className="mb-6 p-4 bg-indigo-50 border-l-4 border-white/20 rounded">
         <div className="flex items-center gap-3 mb-2">
           {finalDecision ? (
             <CheckCircle className="w-8 h-8 text-white" />
@@ -819,10 +819,9 @@ const BatchDecisionPanel: React.FC<BatchDecisionPanelProps> = ({ batchResult, se
       {/* Cells Result Table */}
       <div className="bg-slate-50 rounded-lg overflow-hidden border border-slate-200 mb-6">
         <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-slate-200 text-xs font-semibold text-slate-600 uppercase">
-          <div className="col-span-3">Cell ID</div>
-          <div className="col-span-2 text-center">Decision</div>
-          <div className="col-span-2 text-center">Confidence</div>
-          <div className="col-span-3">Top Factor</div>
+          <div className="col-span-4">Cell ID</div>
+          <div className="col-span-3 text-center">Decision</div>
+          <div className="col-span-3 text-center">Confidence</div>
           <div className="col-span-2 text-center">Details</div>
         </div>
 

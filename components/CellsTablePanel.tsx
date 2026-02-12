@@ -8,10 +8,10 @@ interface CellsTablePanelProps {
   onBatchPredict?: (cells: CellFeatures[], modelType: 'ES' | 'MRO') => void;
   batchLoading?: boolean;
   loading?: boolean;
+  selectedModelType: 'ES' | 'MRO';
 }
 
-export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellClick, onBatchPredict, batchLoading = false, loading = false }) => {
-  const [selectedModelType, setSelectedModelType] = useState<'ES' | 'MRO'>('ES');
+export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellClick, onBatchPredict, batchLoading = false, loading = false, selectedModelType }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter cells based on search
@@ -67,61 +67,39 @@ export const CellsTablePanel: React.FC<CellsTablePanelProps> = ({ cells, onCellC
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
           <Server className="w-6 h-6 text-[#EE0434]" />
-          Network Cells ({cells.length})
+          Network Cells ({cells.length}) - {selectedModelType} Model
         </h2>
 
-        {/* Model Type Selector */}
-        <div className="flex gap-2">
-          {onBatchPredict && (
-            <button
-              onClick={() => {
-                const validCells = cells.filter(c => hasValidFeatures(c, selectedModelType));
-                if (validCells.length > 0) {
-                  onBatchPredict(validCells, selectedModelType);
-                }
-              }}
-              disabled={batchLoading}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
-                batchLoading
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-[#EE0434] text-white hover:bg-[#C0042B]'
-              }`}
-              title={`Run ${selectedModelType} prediction on all cells with valid features`}
-            >
-              {batchLoading ? (
-                <>
-                  <Activity className="w-4 h-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <PlayCircle className="w-4 h-4" />
-                  Run All Cells ({cells.filter(c => hasValidFeatures(c, selectedModelType)).length})
-                </>
-              )}
-            </button>
-          )}
+        {/* Batch Predict Button */}
+        {onBatchPredict && (
           <button
-            onClick={() => setSelectedModelType('ES')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedModelType === 'ES'
-                ? 'bg-green-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+            onClick={() => {
+              const validCells = cells.filter(c => hasValidFeatures(c, selectedModelType));
+              if (validCells.length > 0) {
+                onBatchPredict(validCells, selectedModelType);
+              }
+            }}
+            disabled={batchLoading}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2 ${
+              batchLoading
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-[#EE0434] text-white hover:bg-[#C0042B]'
             }`}
+            title={`Run ${selectedModelType} prediction on all cells with valid features`}
           >
-            ES Model
+            {batchLoading ? (
+              <>
+                <Activity className="w-4 h-4 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              <>
+                <PlayCircle className="w-4 h-4" />
+                Run All Cells ({cells.filter(c => hasValidFeatures(c, selectedModelType)).length})
+              </>
+            )}
           </button>
-          <button
-            onClick={() => setSelectedModelType('MRO')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              selectedModelType === 'MRO'
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-            }`}
-          >
-            MRO Model
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Search Bar */}

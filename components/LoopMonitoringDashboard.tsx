@@ -502,6 +502,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 onBatchPredict={handleBatchPredict}
                 batchLoading={batchLoading}
                 loading={cellsLoading}
+                selectedModelType={selectedModelType}
               />
             </div>
 
