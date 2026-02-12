@@ -23,7 +23,6 @@ import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [lastUpdate, setLastUpdate] = useState(new Date());
   const [selectedCell, setSelectedCell] = useState<CellFeatures | null>(null);
   const [selectedModelType, setSelectedModelType] = useState<'ES' | 'MRO'>('ES');
   const [activeSection, setActiveSection] = useState('overview');
@@ -251,7 +250,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
     const [year, month, day] = e.target.value.split('-').map(Number);
     const newDate = new Date(year, month - 1, day);
     setSelectedDate(newDate);
-    setLastUpdate(new Date());
   };
 
   const handleHotspotClick = (hotspot: Hotspot) => {
@@ -447,11 +445,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
           {/* Right Section - Gray */}
           <div className="flex-1 bg-[#44494D] px-6 py-6 flex items-center justify-end gap-4">
             {/* Last Update */}
-            <div className="text-base font-bold" style={{ color: '#FFE6EC' }}>
-              Last updated: {lastUpdate.toLocaleTimeString()}
-            </div>
-
-            {/* Date Picker */}
             <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
               <Calendar className="w-6 h-6" style={{ color: '#C0042B' }} />
               <input
