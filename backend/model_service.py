@@ -190,6 +190,77 @@ class ModelService:
 
         return result, path
 
+    def predict_batch(self, model_type: str, cells: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """
+        Make predictions for multiple cells in a single call.
+
+        Args:
+            model_type: 'ES' or 'MRO'
+            cells: List of dicts, each with 'cell_id' and 'features' keys
+
+        Returns:
+            List of result dicts per cell with decision, confidence, probabilities, and trace
+        """
+        mt = model_type.upper()
+        if mt == 'ES':
+            if self.es_model_data is None:
+                raise RuntimeError("ES model not loaded. Call load_models() first.")
+            model = self.es_model_data['model']
+            feature_names = self.es_model_data['feature_names']
+        elif mt == 'MRO':
+            if self.mro_model_data is None:
+                raise RuntimeError("MRO model not loaded. Call load_models() first.")
+            model = self.mro_model_data['model']
+            feature_names = self.mro_model_data['feature_names']
+        else:
+            raise ValueError(f"Unknown model type: {model_type}. Use 'ES' or 'MRO'")
+
+        results = []
+        for cell_entry in cells:
+            cell_id = cell_entry.get('cell_id', 'unknown')
+            features = cell_entry.get('features', {})
+
+            try:
+                # Validate and prepare input
+                X = self._validate_features(features, feature_names)
+
+                # Make prediction
+                prediction = model.predict(X)[0]
+                probabilities = model.predict_proba(X)[0].tolist()
+                confidence = float(max(probabilities))
+
+                # Extract feature importances
+                feature_importances = self._extract_feature_importances(model, feature_names)
+
+                # Get decision path
+                path = self._get_decision_path(model, X, feature_names)
+
+                results.append({
+                    'cell_id': cell_id,
+                    'model_type': mt,
+                    'decision': bool(prediction),
+                    'confidence': confidence,
+                    'probabilities': probabilities,
+                    'feature_importances': feature_importances,
+                    'feature_values': features,
+                    'path': path,
+                    'error': None,
+                })
+            except Exception as e:
+                results.append({
+                    'cell_id': cell_id,
+                    'model_type': mt,
+                    'decision': None,
+                    'confidence': None,
+                    'probabilities': None,
+                    'feature_importances': None,
+                    'feature_values': features,
+                    'path': [],
+                    'error': str(e),
+                })
+
+        return results
+
     def get_model_info(self, model_type: str) -> Dict[str, Any]:
         """Get information about a model"""
         if model_type.upper() == 'ES':
