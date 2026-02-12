@@ -8,6 +8,7 @@ Uploaded data can then be retrieved and displayed in the Action Planner's Detail
 import logging
 import os
 import json
+import numpy as np
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -60,6 +61,27 @@ def _sanitize_filename(date: str, task_type: str, original_name: str, label: str
     if label:
         return f"{date}_{task_type.upper()}_{label}{ext}"
     return f"{date}_{task_type.upper()}{ext}"
+
+
+def _convert_to_json_safe(obj):
+    """
+    Convert numpy/pandas types to JSON-serializable Python types.
+    """
+    if obj is None or obj is pd.NA:
+        return None
+    if isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
+        return int(obj)
+    if isinstance(obj, (np.floating, np.float64, np.float32, np.float16)):
+        if np.isnan(obj) or np.isinf(obj):
+            return None
+        return float(obj)
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    if isinstance(obj, (pd.Timestamp, datetime)):
+        return obj.isoformat()
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    return obj
 
 
 @router.post("/upload")
@@ -213,6 +235,12 @@ async def get_csv_data(
         # Replace NaN with None for JSON serialization
         df = df.where(pd.notnull(df), None)
         records = df.to_dict(orient="records")
+        
+        # Convert all numpy/pandas types to JSON-safe Python types
+        json_safe_records = []
+        for record in records:
+            json_safe_record = {k: _convert_to_json_safe(v) for k, v in record.items()}
+            json_safe_records.append(json_safe_record)
     except Exception as e:
         raise HTTPException(
             status_code=500,
@@ -224,8 +252,8 @@ async def get_csv_data(
         "task_type": task_type,
         "label": entry.get("label", ""),
         "columns": list(df.columns),
-        "rows": len(records),
-        "data": records,
+        "rows": len(json_safe_records),
+        "data": json_safe_records,
         "original_filename": entry["original_filename"],
         "uploaded_at": entry["uploaded_at"],
     })
