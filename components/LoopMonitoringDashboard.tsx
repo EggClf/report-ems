@@ -8,6 +8,7 @@ import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
 import { AdminPanel } from './AdminPanel';
 import { DataSelectionPanel } from './DataSelectionPanel';
+import { ContextSnapshotPanel } from './ContextSnapshotPanel';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
 import { BatchCellInput } from '../services/mlModelAPI';
@@ -169,7 +170,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200; // Offset for header
 
-      const sectionIds = ['data-selection', 'cells', 'decision-trace', 'planner', 'evaluation'];
+      const sectionIds = ['data-selection', 'context-snapshot', 'cells', 'decision-trace', 'planner', 'evaluation'];
 
       for (const id of sectionIds) {
         const element = sectionRefs.current[id];
@@ -363,6 +364,11 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 onDateChange={handleDateChange}
                 onModelTypeChange={handleModelTypeChange}
               />
+            </div>
+
+            {/* Context Snapshot Panel */}
+            <div ref={(el) => { sectionRefs.current['context-snapshot'] = el; }} id="context-snapshot">
+              <ContextSnapshotPanel selectedDate={selectedDate} />
             </div>
 
             {/* Panel 3: Network Cells Table */}

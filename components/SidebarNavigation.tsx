@@ -10,7 +10,8 @@ import {
   Menu,
   Monitor,
   X,
-  ChevronUp
+  ChevronUp,
+  Database
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
@@ -24,6 +25,7 @@ interface SidebarNavigationProps {
 }
 
 const sections = [
+  { id: 'context-snapshot', label: 'Context Snapshot', icon: Database },
   { id: 'cells', label: 'Network Cell', icon: Brain },
   { id: 'decision-trace', label: 'Decision Tree', icon: GitBranch },
   { id: 'planner', label: 'Action Planner', icon: Cpu },

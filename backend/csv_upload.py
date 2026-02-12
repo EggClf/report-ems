@@ -73,7 +73,7 @@ def _convert_to_json_safe(obj):
         return None
     if pd.isna(obj):
         return None
-    
+
     # Handle numpy types
     if isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
         return int(obj)
@@ -87,13 +87,13 @@ def _convert_to_json_safe(obj):
         return obj.isoformat()
     if isinstance(obj, np.ndarray):
         return obj.tolist()
-    
+
     # Handle string "N/A", "NA", "nan", etc.
     if isinstance(obj, str):
         if obj.strip().upper() in ('N/A', 'NA', 'NAN', 'NULL', ''):
             return None
         return obj
-    
+
     # Try to detect float/int from other types
     try:
         if isinstance(obj, float):
@@ -104,7 +104,7 @@ def _convert_to_json_safe(obj):
             return int(obj)
     except (ValueError, TypeError):
         pass
-    
+
     return obj
 
 
@@ -261,14 +261,14 @@ async def get_csv_data(
             na_values=['N/A', 'NA', 'n/a', 'na', 'NaN', 'nan', 'NULL', 'null', ''],
             keep_default_na=True
         )
-        
+
         # Apply conversion to each cell to ensure JSON safety
         for col in df.columns:
             df[col] = df[col].apply(_convert_to_json_safe)
-        
+
         # Convert to records
         records = df.to_dict(orient="records")
-        
+
         # Additional safety: ensure all values are JSON-safe
         json_safe_records = []
         for record in records:
@@ -280,7 +280,7 @@ async def get_csv_data(
                     # If conversion fails, set to None
                     json_safe_record[k] = None
             json_safe_records.append(json_safe_record)
-            
+
     except Exception as e:
         logger.error(f"Failed to read CSV file {file_path}: {str(e)}")
         raise HTTPException(
