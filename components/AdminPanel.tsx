@@ -11,7 +11,7 @@ interface AdminPanelProps {
   /** Currently selected task type in the dashboard */
   selectedModelType: 'ES' | 'MRO';
   /** Called after a successful upload so the dashboard can refresh CSV data */
-  onUploadSuccess: (date: string, taskType: 'ES' | 'MRO') => void;
+  onUploadSuccess: (date: string, taskType: 'ES' | 'MRO', label: string) => void;
   /** Whether the panel is visible */
   isOpen: boolean;
   /** Toggle panel visibility */
@@ -35,6 +35,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Upload form state — initialise from dashboard's current selection
   const [uploadDate, setUploadDate] = useState<string>(formatDateForInput(selectedDate));
   const [uploadTaskType, setUploadTaskType] = useState<'ES' | 'MRO'>(selectedModelType);
+  const [uploadLabel, setUploadLabel] = useState<string>('before_plan');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ ok: boolean; message: string } | null>(null);
@@ -80,11 +81,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     setUploading(true);
     setUploadResult(null);
     try {
-      const res = await uploadCSV(selectedFile, uploadDate, uploadTaskType);
-      setUploadResult({ ok: true, message: `Uploaded "${res.filename}" — ${res.rows} rows, ${res.columns.length} columns` });
+      const res = await uploadCSV(selectedFile, uploadDate, uploadTaskType, uploadLabel);
+      const labelDisplay = uploadLabel === 'before_plan' ? 'Before Plan' : 'After Plan';
+      setUploadResult({ ok: true, message: `Uploaded "${res.filename}" [${labelDisplay}] — ${res.rows} rows, ${res.columns.length} columns` });
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
-      onUploadSuccess(uploadDate, uploadTaskType);
+      onUploadSuccess(uploadDate, uploadTaskType, uploadLabel);
       loadHistory();
     } catch (err: any) {
       setUploadResult({ ok: false, message: err.message || 'Upload failed' });
@@ -94,12 +96,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   };
 
   const handleDelete = async (entry: CSVUploadEntry) => {
-    if (!confirm(`Delete CSV for ${entry.task_type} on ${entry.date}?`)) return;
+    const labelDisplay = entry.label ? ` [${entry.label === 'before_plan' ? 'Before' : 'After'}]` : '';
+    if (!confirm(`Delete CSV for ${entry.task_type} on ${entry.date}${labelDisplay}?`)) return;
     try {
-      await deleteCSV(entry.date, entry.task_type);
+      await deleteCSV(entry.date, entry.task_type, entry.label || '');
       setUploads((prev) => prev.filter((u) => u.key !== entry.key));
       // Notify parent to refresh if it matches current view
-      onUploadSuccess(entry.date, entry.task_type);
+      onUploadSuccess(entry.date, entry.task_type, entry.label || '');
     } catch (err: any) {
       alert(err.message || 'Delete failed');
     }
@@ -180,6 +183,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               </div>
             </div>
 
+            {/* Evaluation Label */}
+            <div className="mb-4">
+              <label className="block text-xs font-medium text-slate-600 mb-1">Evaluation Label</label>
+              <div className="flex items-center gap-1 px-1 py-1 border border-slate-300 rounded-lg bg-white">
+                <button
+                  onClick={() => setUploadLabel('before_plan')}
+                  className={`flex-1 px-3 py-2 text-sm font-semibold rounded transition-colors ${
+                    uploadLabel === 'before_plan'
+                      ? 'bg-amber-500 text-white'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  Before Plan
+                </button>
+                <button
+                  onClick={() => setUploadLabel('after_plan')}
+                  className={`flex-1 px-3 py-2 text-sm font-semibold rounded transition-colors ${
+                    uploadLabel === 'after_plan'
+                      ? 'bg-emerald-500 text-white'
+                      : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  After Plan
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1">Upload KPI data before and after applying the plan for evaluation comparison.</p>
+            </div>
+
             {/* File Input */}
             <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-indigo-400 transition-colors">
               <input
@@ -225,7 +256,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               ) : (
                 <>
                   <Upload className="w-4 h-4" />
-                  Upload CSV for {uploadTaskType} on {uploadDate}
+                  Upload {uploadLabel === 'before_plan' ? 'Before' : 'After'} Plan CSV for {uploadTaskType} on {uploadDate}
                 </>
               )}
             </button>
@@ -263,6 +294,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                     <tr className="bg-slate-100">
                       <th className="px-3 py-2 text-left font-semibold text-slate-600 border-b border-slate-200">Date</th>
                       <th className="px-3 py-2 text-center font-semibold text-slate-600 border-b border-slate-200">Type</th>
+                      <th className="px-3 py-2 text-center font-semibold text-slate-600 border-b border-slate-200">Label</th>
                       <th className="px-3 py-2 text-left font-semibold text-slate-600 border-b border-slate-200">File</th>
                       <th className="px-3 py-2 text-center font-semibold text-slate-600 border-b border-slate-200">Rows</th>
                       <th className="px-3 py-2 text-left font-semibold text-slate-600 border-b border-slate-200">Uploaded</th>
@@ -283,6 +315,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             }`}>
                               {entry.task_type}
                             </span>
+                          </td>
+                          <td className="px-3 py-2 border-b border-slate-100 text-center">
+                            {entry.label ? (
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                entry.label === 'before_plan'
+                                  ? 'bg-amber-100 text-amber-700'
+                                  : 'bg-emerald-100 text-emerald-700'
+                              }`}>
+                                {entry.label === 'before_plan' ? 'Before' : 'After'}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300">&mdash;</span>
+                            )}
                           </td>
                           <td className="px-3 py-2 border-b border-slate-100 text-slate-600 truncate max-w-[160px]">{entry.original_filename}</td>
                           <td className="px-3 py-2 border-b border-slate-100 text-center text-slate-600">{entry.rows}</td>
@@ -307,7 +352,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
         {/* Footer */}
         <div className="px-6 py-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-400 text-center">
-          Uploaded CSV data is displayed in the Action Planner's <strong>Detailed Data</strong> tab.
+          Upload <strong>Before Plan</strong> and <strong>After Plan</strong> CSV data to compare KPI values in the Evaluation chart.
         </div>
       </div>
     </div>

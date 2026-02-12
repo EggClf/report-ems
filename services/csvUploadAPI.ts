@@ -11,6 +11,7 @@ export interface CSVUploadResponse {
   message: string;
   date: string;
   task_type: 'ES' | 'MRO';
+  label: string;
   rows: number;
   columns: string[];
   filename: string;
@@ -19,6 +20,7 @@ export interface CSVUploadResponse {
 export interface CSVDataResponse {
   date: string;
   task_type: 'ES' | 'MRO';
+  label: string;
   columns: string[];
   rows: number;
   data: Record<string, any>[];
@@ -30,6 +32,7 @@ export interface CSVUploadEntry {
   key: string;
   date: string;
   task_type: 'ES' | 'MRO';
+  label: string;
   original_filename: string;
   stored_filename: string;
   rows: number;
@@ -44,16 +47,19 @@ export interface CSVListResponse {
 
 /**
  * Upload a CSV file for a given date and task type.
+ * @param label - Optional label: 'before_plan' or 'after_plan' for evaluation uploads
  */
 export const uploadCSV = async (
   file: File,
   date: string,
-  taskType: 'ES' | 'MRO'
+  taskType: 'ES' | 'MRO',
+  label: string = ''
 ): Promise<CSVUploadResponse> => {
   const formData = new FormData();
   formData.append('file', file);
   formData.append('date', date);
   formData.append('task_type', taskType);
+  if (label) formData.append('label', label);
 
   const response = await fetch(`${API_BASE_URL}/admin/csv/upload`, {
     method: 'POST',
@@ -69,13 +75,15 @@ export const uploadCSV = async (
 };
 
 /**
- * Retrieve the CSV data for a given date and task type.
+ * Retrieve the CSV data for a given date, task type, and optional label.
  */
 export const fetchCSVData = async (
   date: string,
-  taskType: 'ES' | 'MRO'
+  taskType: 'ES' | 'MRO',
+  label: string = ''
 ): Promise<CSVDataResponse> => {
   const params = new URLSearchParams({ date, task_type: taskType });
+  if (label) params.append('label', label);
   const response = await fetch(`${API_BASE_URL}/admin/csv/data?${params}`, {
     method: 'GET',
     headers: { accept: 'application/json' },
@@ -113,9 +121,11 @@ export const listCSVUploads = async (): Promise<CSVListResponse> => {
  */
 export const deleteCSV = async (
   date: string,
-  taskType: 'ES' | 'MRO'
+  taskType: 'ES' | 'MRO',
+  label: string = ''
 ): Promise<void> => {
   const params = new URLSearchParams({ date, task_type: taskType });
+  if (label) params.append('label', label);
   const response = await fetch(`${API_BASE_URL}/admin/csv/delete?${params}`, {
     method: 'DELETE',
     headers: { accept: 'application/json' },

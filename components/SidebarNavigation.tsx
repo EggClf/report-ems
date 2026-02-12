@@ -5,7 +5,7 @@ import {
   Brain,
   GitBranch,
   Cpu,
-  Play,
+  BarChart3,
   ChevronRight,
   Menu,
   Monitor,
@@ -27,7 +27,7 @@ const sections = [
   { id: 'cells', label: 'Network Cell', icon: Brain },
   { id: 'decision-trace', label: 'Decision Tree', icon: GitBranch },
   { id: 'planner', label: 'Action Planner', icon: Cpu },
-  { id: 'execution', label: 'Execution', icon: Play }
+  { id: 'evaluation', label: 'Evaluation', icon: BarChart3 }
 ];
 
 export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({

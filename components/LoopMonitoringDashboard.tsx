@@ -3,20 +3,16 @@ import { Activity, Shield } from 'lucide-react';
 import { CellsTablePanel } from './CellsTablePanel';
 import { DecisionTreeTracePanel } from './DecisionTreeTracePanel';
 import { PlannerOutputPanel } from './PlannerOutputPanel';
-import { ExecutionOutcomePanel } from './ExecutionOutcomePanel';
+import { EvaluationChartPanel } from './EvaluationChartPanel';
 import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
 import { AdminPanel } from './AdminPanel';
 import { DataSelectionPanel } from './DataSelectionPanel';
-import {
-  getMockPlannerOutput,
-} from '../services/mockDataV2';
 import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
 import { BatchCellInput } from '../services/mlModelAPI';
-import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
+import { fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
 import { fetchCSVData, CSVDataResponse, NotFoundError } from '../services/csvUploadAPI';
-import { ExecutionOutcome, ExecutionStatus } from '../types-v2';
 import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
@@ -48,8 +44,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [decisionTrace, setDecisionTrace] = useState<DecisionTreeTrace | null>(null);
   const [batchTraceResult, setBatchTraceResult] = useState<BatchTraceResult | null>(null);
   const [batchLoading, setBatchLoading] = useState(false);
-  const [plannerOutput, setPlannerOutput] = useState<any>(null);
-  const [executionOutcome, setExecutionOutcome] = useState<any>(null);
 
   // Real plan data from backend
   const [planData, setPlanData] = useState<PlanLoadResponse | null>(null);
@@ -62,6 +56,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
   // CSV data for Detailed Data tab
   const [csvData, setCsvData] = useState<CSVDataResponse | null>(null);
   const [csvLoading, setCsvLoading] = useState(false);
+
+  // Evaluation CSV data (before/after plan)
+  const [evalBeforeData, setEvalBeforeData] = useState<CSVDataResponse | null>(null);
+  const [evalAfterData, setEvalAfterData] = useState<CSVDataResponse | null>(null);
+  const [evalLoading, setEvalLoading] = useState(false);
 
   // Admin Panel visibility
   const [adminPanelOpen, setAdminPanelOpen] = useState(false);
@@ -87,6 +86,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
   // Auto-load CSV data when date or task type changes
   useEffect(() => {
     loadCSVData(selectedDate, selectedModelType);
+  }, [selectedDate, selectedModelType]);
+
+  // Auto-load evaluation CSV data when date or task type changes
+  useEffect(() => {
+    loadEvaluationData(selectedDate, selectedModelType);
   }, [selectedDate, selectedModelType]);
 
   // Load cell data from network scan API
@@ -160,25 +164,37 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
+  // Load evaluation CSV data (before/after) for the Evaluation chart
+  const loadEvaluationData = async (date: Date, taskType: 'ES' | 'MRO') => {
+    setEvalLoading(true);
+    const dateStr = formatDateForInput(date);
+
+    // Load both before and after in parallel
+    const [beforeResult, afterResult] = await Promise.allSettled([
+      fetchCSVData(dateStr, taskType, 'before_plan'),
+      fetchCSVData(dateStr, taskType, 'after_plan'),
+    ]);
+
+    setEvalBeforeData(
+      beforeResult.status === 'fulfilled' ? beforeResult.value : null
+    );
+    setEvalAfterData(
+      afterResult.status === 'fulfilled' ? afterResult.value : null
+    );
+    setEvalLoading(false);
+  };
+
   // Called when admin uploads/deletes a CSV
-  const handleCSVUploadSuccess = (date: string, taskType: 'ES' | 'MRO') => {
+  const handleCSVUploadSuccess = (date: string, taskType: 'ES' | 'MRO', label: string) => {
     // Reload CSV data if the upload matches the current view
     const currentDateStr = formatDateForInput(selectedDate);
     if (date === currentDateStr && taskType === selectedModelType) {
-      loadCSVData(selectedDate, selectedModelType);
+      if (label === 'before_plan' || label === 'after_plan') {
+        loadEvaluationData(selectedDate, selectedModelType);
+      } else {
+        loadCSVData(selectedDate, selectedModelType);
+      }
     }
-  };
-
-  // Transform alarm data to Alert format (kept for QuickStatsBar)
-  const transformAlarmsToAlerts = (alarms: AlarmRecord[]) => {
-    return alarms.map((alarm) => {
-      return {
-        id: `alarm_${alarm.event_id}`,
-        type: 'kpi_guardrail_violated' as const,
-        message: `[${alarm.source_name}] ${alarm.event_name}: ${alarm.specific_problem}`,
-        timestamp: new Date(alarm.trigger_instant),
-      };
-    });
   };
 
   // Scroll tracking for active section
@@ -186,7 +202,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200; // Offset for header
 
-      const sectionIds = ['data-selection', 'cells', 'decision-trace', 'planner', 'execution'];
+      const sectionIds = ['data-selection', 'cells', 'decision-trace', 'planner', 'evaluation'];
 
       for (const id of sectionIds) {
         const element = sectionRefs.current[id];
@@ -230,79 +246,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
     setSelectedModelType(type);
   };
 
-  /**
-   * Build ExecutionOutcome with real KPI data from backend
-   */
-  const getExecutionTimeForDate = (date: Date): Date => {
-    const normalized = new Date(date);
-    const now = new Date();
-    if (normalized.toDateString() === now.toDateString()) {
-      normalized.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), 0);
-    } else {
-      normalized.setHours(12, 0, 0, 0);
-    }
-    return normalized;
-  };
-
-  const buildExecutionOutcome = async (
-    planId: string,
-    intentId: string,
-    cellname: string,
-    taskType: 'MRO' | 'ES',
-    executionDate: Date
-  ): Promise<ExecutionOutcome> => {
-    const executionTime = getExecutionTimeForDate(executionDate);
-    const executionId = `exec_${Date.now()}`;
-
-    // Fetch real KPI deltas from backend
-    let kpiDeltas = [];
-    try {
-      kpiDeltas = await calculateKPIDeltas(
-        executionTime.toISOString(),
-        [cellname],
-        taskType,
-        2, // 2 hours before
-        2  // 2 hours after
-      );
-    } catch (error) {
-      console.error('Failed to calculate KPI deltas:', error);
-      // Return empty KPI deltas if API fails
-      kpiDeltas = [];
-    }
-
-    return {
-      executionId,
-      planId,
-      intentId,
-      logs: [
-        {
-          executionId,
-          planId,
-          intentId,
-          status: 'sent' as ExecutionStatus,
-          timestamp: new Date(executionTime.getTime()),
-          targetCell: cellname,
-        },
-        {
-          executionId,
-          planId,
-          intentId,
-          status: 'ack' as ExecutionStatus,
-          timestamp: new Date(executionTime.getTime() + 2000),
-          targetCell: cellname,
-        },
-        {
-          executionId,
-          planId,
-          intentId,
-          status: 'applied' as ExecutionStatus,
-          timestamp: new Date(executionTime.getTime() + 5000),
-          targetCell: cellname,
-        },
-      ],
-      kpiDeltas,
-    };
-  };
 const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
     setSelectedCell(cell);
     setSelectedModelType(modelType);
@@ -329,20 +272,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
         setSelectedModelType(modelType);
         // Plan will auto-reload via useEffect
       }
-
-      // Generate planner output (kept for execution outcome)
-      const newPlannerOutput = getMockPlannerOutput(trace.intentId);
-      setPlannerOutput(newPlannerOutput);
-
-      // Fetch execution outcome with real KPI data from backend
-      const outcome = await buildExecutionOutcome(
-        newPlannerOutput.planId,
-        trace.intentId,
-        cell.cellname,
-        modelType,
-        selectedDate
-      );
-      setExecutionOutcome(outcome);
 
       console.log(`✓ ${modelType} prediction complete:`, trace.decision);
     } catch (error) {
@@ -541,26 +470,16 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
               )}
             </div>
 
-            {/* Panel 6: Execution & Outcome - Only shown after cell selection */}
-            {selectedCell && executionOutcome && (
-              <>
-                <div className={`p-4 border-2 rounded-lg ${
-                  selectedModelType === 'ES'
-                    ? 'bg-green-50 border-green-300'
-                    : 'bg-blue-50 border-blue-300'
-                }`}>
-                  <div className={`text-base font-semibold ${
-                    selectedModelType === 'ES' ? 'text-green-800' : 'text-blue-800'
-                  }`}>
-                    📊 Execution outcome for Cell: <span className="font-mono">{selectedCell.cellname}</span>
-                    {' '}(NE: {selectedCell.ne_name}) • Task: {selectedModelType}
-                  </div>
-                </div>
-                <div ref={(el) => { sectionRefs.current['execution'] = el; }} id="execution">
-                  <ExecutionOutcomePanel outcome={executionOutcome} />
-                </div>
-              </>
-            )}
+            {/* Panel 6: KPI Evaluation Chart - Before vs After Plan */}
+            <div ref={(el) => { sectionRefs.current['evaluation'] = el; }} id="evaluation">
+              <EvaluationChartPanel
+                beforeData={evalBeforeData}
+                afterData={evalAfterData}
+                taskType={selectedModelType}
+                date={formatDateForInput(selectedDate)}
+                loading={evalLoading}
+              />
+            </div>
           </div>
         </div>
       </div>
