@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { BarChart3, TrendingUp, Info, AlertCircle } from 'lucide-react';
+import { BarChart3, TrendingUp, Info, AlertCircle, Calendar } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ReferenceLine,
@@ -7,26 +7,29 @@ import {
 import { CSVDataResponse } from '../services/csvUploadAPI';
 
 interface EvaluationChartPanelProps {
-  /** CSV data uploaded as "before_plan" */
+  /** CSV data uploaded as "before_plan" (may span many days) */
   beforeData: CSVDataResponse | null;
-  /** CSV data uploaded as "after_plan" */
+  /** CSV data uploaded as "after_plan" (single day) */
   afterData: CSVDataResponse | null;
   /** Current task type */
   taskType: 'ES' | 'MRO';
-  /** Current date string */
-  date: string;
+  /** Default date string (YYYY-MM-DD) from dashboard selection */
+  defaultDate: string;
   /** Whether data is still loading */
   loading?: boolean;
 }
 
 /**
  * Detect numeric KPI columns from CSV columns.
- * Excludes known non-KPI columns: Datetime, Cellname, etc.
+ * Excludes known non-KPI columns: No, Site, Datetime, NE Name, Cell, Cellname, etc.
  */
 const NON_KPI_COLUMNS = new Set([
+  'No', 'no', 'NO',
+  'Site', 'site', 'SITE',
   'datetime', 'Datetime', 'DATETIME',
+  'NE Name', 'ne_name', 'NE_Name', 'NE_NAME', 'neName', 'NEName',
+  'Cell', 'cell', 'CELL',
   'cellname', 'Cellname', 'CELLNAME', 'CellName', 'cell_name',
-  'ne_name', 'NE_Name', 'NE_NAME', 'neName',
   'date', 'Date', 'DATE',
   'hour', 'Hour', 'HOUR',
 ]);
@@ -98,6 +101,22 @@ const processCSVByHour = (
 };
 
 /**
+ * Extract unique date strings (YYYY-MM-DD) from CSV data rows.
+ */
+const extractUniqueDates = (data: Record<string, any>[]): string[] => {
+  const dateSet = new Set<string>();
+  for (const row of data) {
+    const dtKey = Object.keys(row).find((k) => k.toLowerCase() === 'datetime');
+    if (!dtKey) continue;
+    const dtValue = String(row[dtKey] ?? '');
+    // Extract YYYY-MM-DD portion
+    const match = dtValue.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (match) dateSet.add(match[1]);
+  }
+  return Array.from(dateSet).sort();
+};
+
+/**
  * Custom tooltip for the chart
  */
 const CustomChartTooltip = ({ active, payload, label }: any) => {
@@ -136,9 +155,35 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
   beforeData,
   afterData,
   taskType,
-  date,
+  defaultDate,
   loading,
 }) => {
+  // ── Available dates from the before-plan CSV (spans many days) ──
+  const availableDates = useMemo(() => {
+    const beforeDates = beforeData ? extractUniqueDates(beforeData.data) : [];
+    const afterDates = afterData ? extractUniqueDates(afterData.data) : [];
+    // Merge & deduplicate
+    const all = new Set([...beforeDates, ...afterDates]);
+    return Array.from(all).sort();
+  }, [beforeData, afterData]);
+
+  // Selected evaluation date — default to the after-plan date (single day) or dashboard date
+  const [selectedDate, setSelectedDate] = useState<string>('');
+
+  // Auto-select best date when data changes
+  React.useEffect(() => {
+    if (availableDates.length === 0) return;
+    // Prefer: afterData's single date > dashboard date > first available
+    const afterDates = afterData ? extractUniqueDates(afterData.data) : [];
+    if (afterDates.length > 0 && availableDates.includes(afterDates[0])) {
+      setSelectedDate(afterDates[0]);
+    } else if (availableDates.includes(defaultDate)) {
+      setSelectedDate(defaultDate);
+    } else {
+      setSelectedDate(availableDates[0]);
+    }
+  }, [availableDates, afterData, defaultDate]);
+
   // Determine available KPI columns from whichever dataset is available
   const availableKPIs = useMemo(() => {
     const cols = beforeData?.columns ?? afterData?.columns ?? [];
@@ -154,16 +199,16 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
     }
   }, [availableKPIs]);
 
-  // Process data for the selected KPI
+  // Process data for the selected KPI & date
   const chartData = useMemo(() => {
-    if (!selectedKPI) return [];
+    if (!selectedKPI || !selectedDate) return [];
 
     const beforeHourly = beforeData
-      ? processCSVByHour(beforeData.data, selectedKPI, date)
+      ? processCSVByHour(beforeData.data, selectedKPI, selectedDate)
       : Array.from({ length: 24 }, (_, h) => ({ hour: h, value: null }));
 
     const afterHourly = afterData
-      ? processCSVByHour(afterData.data, selectedKPI, date)
+      ? processCSVByHour(afterData.data, selectedKPI, selectedDate)
       : Array.from({ length: 24 }, (_, h) => ({ hour: h, value: null }));
 
     return Array.from({ length: 24 }, (_, h) => ({
@@ -171,7 +216,7 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
       'Before Plan': beforeHourly[h].value,
       'After Plan': afterHourly[h].value,
     }));
-  }, [beforeData, afterData, selectedKPI, date]);
+  }, [beforeData, afterData, selectedKPI, selectedDate]);
 
   // Summary stats
   const summaryStats = useMemo(() => {
@@ -229,7 +274,7 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
               {taskType}
             </span>
             <span className="text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-              {date}
+              {selectedDate || defaultDate}
             </span>
           </div>
         </div>
@@ -246,7 +291,7 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
             <h3 className="text-base font-semibold text-slate-700 mb-1">No Evaluation Data</h3>
             <p className="text-sm text-slate-500">
               Use the <strong>Admin Panel</strong> to upload <strong>Before Plan</strong> and <strong>After Plan</strong> CSV
-              files for <strong>{taskType}</strong> on <strong>{date}</strong>.
+              files for <strong>{taskType}</strong>.
             </p>
           </div>
         ) : (
@@ -271,21 +316,53 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
               </div>
             </div>
 
-            {/* KPI Selector */}
-            {availableKPIs.length > 0 && (
+            {/* Date & KPI Selectors */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date Selector */}
               <div>
-                <label className="block text-xs font-semibold text-slate-600 mb-1.5">Select KPI Column</label>
-                <select
-                  value={selectedKPI}
-                  onChange={(e) => setSelectedKPI(e.target.value)}
-                  className="w-full max-w-md px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                >
-                  {availableKPIs.map((kpi) => (
-                    <option key={kpi} value={kpi}>{kpi}</option>
-                  ))}
-                </select>
+                <label className="block text-xs font-semibold text-slate-600 mb-1.5 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5" />
+                  Evaluation Date
+                </label>
+                {availableDates.length > 0 ? (
+                  <select
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    {availableDates.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className="px-3 py-2 text-sm text-slate-400 border border-slate-200 rounded-lg bg-slate-50">
+                    No dates available
+                  </div>
+                )}
+                <p className="text-[10px] text-slate-400 mt-1">
+                  {availableDates.length} date{availableDates.length !== 1 ? 's' : ''} found in uploaded data
+                </p>
               </div>
-            )}
+
+              {/* KPI Selector */}
+              {availableKPIs.length > 0 && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-600 mb-1.5">Select KPI Column</label>
+                  <select
+                    value={selectedKPI}
+                    onChange={(e) => setSelectedKPI(e.target.value)}
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+                  >
+                    {availableKPIs.map((kpi) => (
+                      <option key={kpi} value={kpi}>{kpi}</option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    {availableKPIs.length} KPI column{availableKPIs.length !== 1 ? 's' : ''} detected
+                  </p>
+                </div>
+              )}
+            </div>
 
             {/* Summary Cards */}
             {summaryStats && (summaryStats.beforeMean !== null || summaryStats.afterMean !== null) && (
@@ -403,7 +480,7 @@ export const EvaluationChartPanel: React.FC<EvaluationChartPanelProps> = ({
               <span>
                 Data is grouped by hour (extracted from <code className="bg-slate-100 px-1 rounded">Datetime</code>)
                 and aggregated as <code className="bg-slate-100 px-1 rounded">mean(KPI)</code> across all
-                cells for <strong>{taskType}</strong> on <strong>{date}</strong>.
+                cells for <strong>{taskType}</strong> on <strong>{selectedDate || defaultDate}</strong>.
                 Upload evaluation CSVs via the <strong>Admin Panel</strong>.
               </span>
             </div>

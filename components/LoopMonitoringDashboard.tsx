@@ -12,7 +12,7 @@ import { networkScanAPI, CellFeatures } from '../services/networkScanAPI';
 import { mlModelAPI } from '../services/mlModelAPI';
 import { BatchCellInput } from '../services/mlModelAPI';
 import { fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
-import { fetchCSVData, CSVDataResponse, NotFoundError } from '../services/csvUploadAPI';
+import { fetchCSVData, CSVDataResponse } from '../services/csvUploadAPI';
 import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
@@ -53,10 +53,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
   const [alarmData, setAlarmData] = useState<AlarmRecord[]>([]);
   const [alarmsLoading, setAlarmsLoading] = useState(false);
 
-  // CSV data for Detailed Data tab
-  const [csvData, setCsvData] = useState<CSVDataResponse | null>(null);
-  const [csvLoading, setCsvLoading] = useState(false);
-
   // Evaluation CSV data (before/after plan)
   const [evalBeforeData, setEvalBeforeData] = useState<CSVDataResponse | null>(null);
   const [evalAfterData, setEvalAfterData] = useState<CSVDataResponse | null>(null);
@@ -83,15 +79,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
     loadPlanData(selectedDate, selectedModelType);
   }, [selectedDate, selectedModelType]);
 
-  // Auto-load CSV data when date or task type changes
+  // Auto-load evaluation CSV data when task type changes
+  // (before-plan may span many days; not filtered by date)
   useEffect(() => {
-    loadCSVData(selectedDate, selectedModelType);
-  }, [selectedDate, selectedModelType]);
-
-  // Auto-load evaluation CSV data when date or task type changes
-  useEffect(() => {
-    loadEvaluationData(selectedDate, selectedModelType);
-  }, [selectedDate, selectedModelType]);
+    loadEvaluationData(selectedModelType);
+  }, [selectedModelType]);
 
   // Load cell data from network scan API
   const loadCellData = async (date: Date) => {
@@ -143,31 +135,11 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
-  // Load CSV data for Detailed Data tab
-  const loadCSVData = async (date: Date, taskType: 'ES' | 'MRO') => {
-    setCsvLoading(true);
-    try {
-      const dateStr = formatDateForInput(date);
-      const data = await fetchCSVData(dateStr, taskType);
-      setCsvData(data);
-      console.log(`✓ Loaded CSV data for ${taskType} on ${dateStr}`);
-    } catch (error) {
-      if (error instanceof NotFoundError) {
-        // No CSV uploaded for this date/type — that's fine
-        setCsvData(null);
-      } else {
-        console.error('Failed to load CSV data:', error);
-        setCsvData(null);
-      }
-    } finally {
-      setCsvLoading(false);
-    }
-  };
-
   // Load evaluation CSV data (before/after) for the Evaluation chart
-  const loadEvaluationData = async (date: Date, taskType: 'ES' | 'MRO') => {
+  // Before-plan CSV spans many days, so we don't filter by date here.
+  const loadEvaluationData = async (taskType: 'ES' | 'MRO') => {
     setEvalLoading(true);
-    const dateStr = formatDateForInput(date);
+    const dateStr = formatDateForInput(selectedDate);
 
     // Load both before and after in parallel
     const [beforeResult, afterResult] = await Promise.allSettled([
@@ -186,14 +158,9 @@ export const LoopMonitoringDashboard: React.FC = () => {
 
   // Called when admin uploads/deletes a CSV
   const handleCSVUploadSuccess = (date: string, taskType: 'ES' | 'MRO', label: string) => {
-    // Reload CSV data if the upload matches the current view
-    const currentDateStr = formatDateForInput(selectedDate);
-    if (date === currentDateStr && taskType === selectedModelType) {
-      if (label === 'before_plan' || label === 'after_plan') {
-        loadEvaluationData(selectedDate, selectedModelType);
-      } else {
-        loadCSVData(selectedDate, selectedModelType);
-      }
+    // Reload evaluation data if the upload matches the current task type
+    if (taskType === selectedModelType) {
+      loadEvaluationData(selectedModelType);
     }
   };
 
@@ -458,7 +425,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                   </div>
                 </div>
               ) : planData ? (
-                <PlannerOutputPanel planResponse={planData} csvData={csvData} csvLoading={csvLoading} />
+                <PlannerOutputPanel planResponse={planData} csvData={evalAfterData} csvLoading={evalLoading} />
               ) : (
                 <div className="bg-[#fdf9f8] rounded-lg border border-gray-200 shadow-sm p-8">
                   <div className="text-center text-gray-500">
@@ -476,7 +443,7 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
                 beforeData={evalBeforeData}
                 afterData={evalAfterData}
                 taskType={selectedModelType}
-                date={formatDateForInput(selectedDate)}
+                defaultDate={formatDateForInput(selectedDate)}
                 loading={evalLoading}
               />
             </div>
