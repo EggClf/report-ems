@@ -66,9 +66,15 @@ def _sanitize_filename(date: str, task_type: str, original_name: str, label: str
 def _convert_to_json_safe(obj):
     """
     Convert numpy/pandas types to JSON-serializable Python types.
+    Handles N/A, NaN, None, and various numpy types.
     """
+    # Handle None, pd.NA, np.nan
     if obj is None or obj is pd.NA:
         return None
+    if pd.isna(obj):
+        return None
+    
+    # Handle numpy types
     if isinstance(obj, (np.integer, np.int64, np.int32, np.int16, np.int8)):
         return int(obj)
     if isinstance(obj, (np.floating, np.float64, np.float32, np.float16)):
@@ -81,6 +87,24 @@ def _convert_to_json_safe(obj):
         return obj.isoformat()
     if isinstance(obj, np.ndarray):
         return obj.tolist()
+    
+    # Handle string "N/A", "NA", "nan", etc.
+    if isinstance(obj, str):
+        if obj.strip().upper() in ('N/A', 'NA', 'NAN', 'NULL', ''):
+            return None
+        return obj
+    
+    # Try to detect float/int from other types
+    try:
+        if isinstance(obj, float):
+            if np.isnan(obj) or np.isinf(obj):
+                return None
+            return float(obj)
+        if isinstance(obj, int):
+            return int(obj)
+    except (ValueError, TypeError):
+        pass
+    
     return obj
 
 
@@ -231,17 +255,34 @@ async def get_csv_data(
         )
 
     try:
-        df = pd.read_csv(file_path)
-        # Replace NaN with None for JSON serialization
-        df = df.where(pd.notnull(df), None)
+        # Read CSV with na_values to handle various N/A representations
+        df = pd.read_csv(
+            file_path,
+            na_values=['N/A', 'NA', 'n/a', 'na', 'NaN', 'nan', 'NULL', 'null', ''],
+            keep_default_na=True
+        )
+        
+        # Apply conversion to each cell to ensure JSON safety
+        for col in df.columns:
+            df[col] = df[col].apply(_convert_to_json_safe)
+        
+        # Convert to records
         records = df.to_dict(orient="records")
         
-        # Convert all numpy/pandas types to JSON-safe Python types
+        # Additional safety: ensure all values are JSON-safe
         json_safe_records = []
         for record in records:
-            json_safe_record = {k: _convert_to_json_safe(v) for k, v in record.items()}
+            json_safe_record = {}
+            for k, v in record.items():
+                try:
+                    json_safe_record[k] = _convert_to_json_safe(v)
+                except Exception:
+                    # If conversion fails, set to None
+                    json_safe_record[k] = None
             json_safe_records.append(json_safe_record)
+            
     except Exception as e:
+        logger.error(f"Failed to read CSV file {file_path}: {str(e)}")
         raise HTTPException(
             status_code=500,
             detail=f"Failed to read CSV file: {str(e)}"
