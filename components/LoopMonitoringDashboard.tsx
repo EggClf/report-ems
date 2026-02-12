@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Network, Calendar, Activity, Menu, Shield } from 'lucide-react';
-import { OverviewPanel } from './OverviewPanel';
-import { HotspotsMapPanel } from './HotspotsMapPanel';
+import { Activity, Shield } from 'lucide-react';
 import { CellsTablePanel } from './CellsTablePanel';
 import { DecisionTreeTracePanel } from './DecisionTreeTracePanel';
 import { PlannerOutputPanel } from './PlannerOutputPanel';
 import { ExecutionOutcomePanel } from './ExecutionOutcomePanel';
-import { IntentLegend } from './IntentLegend';
 import { SidebarNavigation } from './SidebarNavigation';
 import { QuickStatsBar } from './QuickStatsBar';
 import { AdminPanel } from './AdminPanel';
+import { DataSelectionPanel } from './DataSelectionPanel';
 import {
   getMockPlannerOutput,
 } from '../services/mockDataV2';
@@ -18,7 +16,7 @@ import { mlModelAPI } from '../services/mlModelAPI';
 import { BatchCellInput } from '../services/mlModelAPI';
 import { calculateKPIDeltas, fetchPlanData, PlanLoadResponse, fetchCurrentAlarms, AlarmRecord } from '../services/api';
 import { fetchCSVData, CSVDataResponse, NotFoundError } from '../services/csvUploadAPI';
-import { Hotspot, ExecutionOutcome, ExecutionStatus, Priority } from '../types-v2';
+import { ExecutionOutcome, ExecutionStatus } from '../types-v2';
 import { DecisionTreeTrace, BatchTraceResult } from '../types-v2';
 
 export const LoopMonitoringDashboard: React.FC = () => {
@@ -41,7 +39,6 @@ export const LoopMonitoringDashboard: React.FC = () => {
     loopStatus: 'running',
     alerts: []
   });
-  const [hotspots, setHotspots] = useState<Hotspot[]>([]);
 
   // Real cell data from network scan
   const [cells, setCells] = useState<CellFeatures[]>([]);
@@ -172,34 +169,14 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
-  // Transform alarm data to Alert format
+  // Transform alarm data to Alert format (kept for QuickStatsBar)
   const transformAlarmsToAlerts = (alarms: AlarmRecord[]) => {
     return alarms.map((alarm) => {
-      // Map backend severity to frontend priority
-      let severity: Priority;
-      switch (alarm.severity) {
-        case 'CRITICAL':
-          severity = 'critical';
-          break;
-        case 'MAJOR':
-          severity = 'high';
-          break;
-        case 'MINOR':
-          severity = 'medium';
-          break;
-        case 'WARNING':
-          severity = 'low';
-          break;
-        default:
-          severity = 'medium';
-      }
-
       return {
         id: `alarm_${alarm.event_id}`,
         type: 'kpi_guardrail_violated' as const,
         message: `[${alarm.source_name}] ${alarm.event_name}: ${alarm.specific_problem}`,
         timestamp: new Date(alarm.trigger_instant),
-        severity,
       };
     });
   };
@@ -209,7 +186,7 @@ export const LoopMonitoringDashboard: React.FC = () => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY + 200; // Offset for header
 
-      const sectionIds = ['overview', 'legend', 'hotspots', 'cells', 'decision-trace', 'planner', 'execution'];
+      const sectionIds = ['data-selection', 'cells', 'decision-trace', 'planner', 'execution'];
 
       for (const id of sectionIds) {
         const element = sectionRefs.current[id];
@@ -245,17 +222,14 @@ export const LoopMonitoringDashboard: React.FC = () => {
     }
   };
 
-  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Parse date string to avoid timezone issues
-    const [year, month, day] = e.target.value.split('-').map(Number);
-    const newDate = new Date(year, month - 1, day);
+  const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
   };
 
-  const handleHotspotClick = (hotspot: Hotspot) => {
-    // Navigate to cells section when hotspot clicked
-    handleNavigate('cells');
+  const handleModelTypeChange = (type: 'ES' | 'MRO') => {
+    setSelectedModelType(type);
   };
+
   /**
    * Build ExecutionOutcome with real KPI data from backend
    */
@@ -444,45 +418,6 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
 
           {/* Right Section - Gray */}
           <div className="flex-1 bg-[#44494D] px-6 py-6 flex items-center justify-end gap-4">
-            {/* Last Update */}
-            <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
-              <Calendar className="w-6 h-6" style={{ color: '#C0042B' }} />
-              <input
-                type="date"
-                value={formatDateForInput(selectedDate)}
-                onChange={handleDateChange}
-                max={formatDateForInput(new Date())}
-                className="bg-transparent text-base font-medium border-none outline-none cursor-pointer"
-                style={{ color: '#7A1230' }}
-              />
-            </div>
-
-            {/* Task Type Toggle */}
-            <div className="flex items-center gap-1 px-1 py-1 bg-white rounded-lg shadow-sm" style={{ borderColor: '#94a3b8', borderWidth: '1px' }}>
-              <button
-                onClick={() => setSelectedModelType('ES')}
-                className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
-                  selectedModelType === 'ES'
-                    ? 'bg-green-500 text-white'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-                title="Energy Saving"
-              >
-                ES
-              </button>
-              <button
-                onClick={() => setSelectedModelType('MRO')}
-                className={`px-4 py-2 text-base font-semibold rounded transition-colors ${
-                  selectedModelType === 'MRO'
-                    ? 'bg-blue-500 text-white'
-                    : 'text-slate-600 hover:bg-slate-100'
-                }`}
-                title="Mobility Robustness Optimization"
-              >
-                MRO
-              </button>
-            </div>
-
             {/* Loop Status Indicator */}
             <div className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg shadow-sm" style={{ borderColor: '#EE0434', borderWidth: '1px' }}>
               <Activity className={`w-6 h-6 ${
@@ -524,22 +459,14 @@ const handleCellClick = async (cell: CellFeatures, modelType: 'ES' | 'MRO') => {
       }`}>
         <div className="max-w-[1920px] mx-auto px-6 py-6">
           <div className="space-y-6">
-            {/* Panel 1: Overview */}
-            <div ref={(el) => { sectionRefs.current['overview'] = el; }} id="overview">
-              <OverviewPanel data={{
-                ...overviewData,
-                alerts: transformAlarmsToAlerts(alarmData),
-              }} />
-            </div>
-
-            {/* Intent Legend */}
-            <div ref={(el) => { sectionRefs.current['legend'] = el; }} id="legend">
-              <IntentLegend />
-            </div>
-
-            {/* Panel 2: Map & Hotspots */}
-            <div ref={(el) => { sectionRefs.current['hotspots'] = el; }} id="hotspots">
-              <HotspotsMapPanel hotspots={hotspots} onHotspotClick={handleHotspotClick} />
+            {/* Data Selection Panel */}
+            <div ref={(el) => { sectionRefs.current['data-selection'] = el; }} id="data-selection">
+              <DataSelectionPanel
+                selectedDate={selectedDate}
+                selectedModelType={selectedModelType}
+                onDateChange={handleDateChange}
+                onModelTypeChange={handleModelTypeChange}
+              />
             </div>
 
             {/* Panel 3: Network Cells Table */}

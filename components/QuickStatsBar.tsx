@@ -26,7 +26,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
         <div className="grid grid-cols-2 gap-6">
           {/* Loop Status */}
           <button
-            onClick={() => onNavigate('overview')}
+            onClick={() => onNavigate('data-selection')}
             className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
             <div className={`w-3 h-3 rounded-full ${getStatusColor()} animate-pulse shadow-sm`}></div>
@@ -39,7 +39,7 @@ export const QuickStatsBar: React.FC<QuickStatsBarProps> = ({
 
           {/* Alerts */}
           <button
-            onClick={() => onNavigate('overview')}
+            onClick={() => onNavigate('data-selection')}
             className="flex items-center gap-4 p-3 rounded-xl transition-colors group border border-transparent hover:border-gray-100 hover:bg-gray-50"
           >
             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center group-hover:bg-[#EE0033] group-hover:text-white transition-colors">

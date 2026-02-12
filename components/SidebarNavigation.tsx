@@ -8,9 +8,11 @@ import {
   Play,
   ChevronRight,
   Menu,
+  Monitor,
   X,
   ChevronUp
 } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface SidebarNavigationProps {
   activeSection: string;
@@ -22,9 +24,6 @@ interface SidebarNavigationProps {
 }
 
 const sections = [
-  { id: 'overview', label: 'Loop Status', icon: Activity },
-  { id: 'legend', label: 'Intent Guide', icon: Brain },
-  { id: 'hotspots', label: 'Hotspots', icon: MapPin },
   { id: 'cells', label: 'Network Cell', icon: Brain },
   { id: 'decision-trace', label: 'Decision Tree', icon: GitBranch },
   { id: 'planner', label: 'Action Planner', icon: Cpu },
@@ -39,6 +38,8 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
   isExpanded,
   onToggleExpanded
 }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
@@ -101,6 +102,40 @@ export const SidebarNavigation: React.FC<SidebarNavigationProps> = ({
           {/* Navigation Links */}
           <nav className="flex-1 overflow-y-auto">
             <div className={`space-y-1 ${!isExpanded && 'flex flex-col items-center'}`}>
+              {/* System View Link */}
+              <button
+                onClick={() => navigate('/system')}
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${
+                  !isExpanded && 'justify-center'
+                }`}
+                style={{
+                  backgroundColor: location.pathname === '/system' ? '#EE0033' : 'transparent',
+                  color: location.pathname === '/system' ? 'white' : '#9CA3AF',
+                  boxShadow: location.pathname === '/system' ? '0 4px 6px -1px rgba(238, 0, 51, 0.3)' : 'none'
+                }}
+                onMouseEnter={(e) => {
+                  if (location.pathname !== '/system') {
+                    e.currentTarget.style.backgroundColor = '#44494D';
+                    e.currentTarget.style.color = 'white';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (location.pathname !== '/system') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#9CA3AF';
+                  }
+                }}
+                title={!isExpanded ? 'System View' : ''}
+              >
+                <Monitor className="w-5 h-5 flex-shrink-0" />
+                {isExpanded && (
+                  <span className="text-sm font-medium truncate">System View</span>
+                )}
+              </button>
+
+              {/* Divider */}
+              <div className={`my-2 ${isExpanded ? 'border-t border-[#44494D]' : 'w-8 border-t border-[#44494D]'}`}></div>
+
               {sections.map((section) => {
                 const Icon = section.icon;
                 const isActive = activeSection === section.id;
